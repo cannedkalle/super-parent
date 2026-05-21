@@ -1,42 +1,48 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700;800&display=swap');
 
 :root {
-  /* Color Palette (Sand & Clay) */
-  --bg-warm-cream: #FAF8F5;
-  --text-primary: #2D2B2A;
-  --text-secondary: #5C5755;
-  --text-muted: #706A68;
-
-  /* Glassmorphism Styles */
-  --glass-bg: rgba(255, 255, 255, 0.45);
-  --glass-blur: 12px;
-  --glass-border: rgba(255, 255, 255, 0.35);
-  --glass-shadow: 0 8px 32px 0 rgba(142, 137, 133, 0.08);
+  /* Super Parent Art System */
+  --bg-warm-cream: #FFF8DD;
+  --surface: #FFFFFF;
+  --surface-soft: #FFFDF4;
+  --ink: #171314;
+  --text-primary: #171314;
+  --text-secondary: #3F3638;
+  --text-muted: #675C5F;
 
   /* Accents */
   --accent-sage: #6E8268;
   --accent-sage-hover: #5A6D55;
-  --accent-mustard: #DCA134;
-  --accent-mustard-hover: #C38E2C;
-  --accent-terracotta: #C36A55;
-  --accent-terracotta-hover: #AA5844;
-  --accent-slate: #5C788A;
-  --accent-slate-hover: #4B6373;
+  --accent-mustard: #FFDC2E;
+  --accent-mustard-hover: #F2C600;
+  --accent-terracotta: #FF5F8F;
+  --accent-terracotta-hover: #E54978;
+  --accent-slate: #30D5C8;
+  --accent-slate-hover: #1BB9AD;
+  --accent-blue: #4C7DFF;
+
+  /* Variant Tokens */
+  --app-bg: var(--bg-warm-cream);
+  --app-accent: var(--accent-slate);
+  --app-accent-2: var(--accent-mustard);
+  --app-accent-3: var(--accent-terracotta);
+  --app-panel-shadow: 6px 6px 0 var(--ink);
+  --app-panel-border: 2px solid var(--ink);
 
   /* Focus & Borders */
-  --border-color: rgba(45, 43, 42, 0.1);
-  --focus-ring: rgba(92, 120, 138, 0.4);
+  --border-color: rgba(23, 19, 20, 0.18);
+  --focus-ring: rgba(48, 213, 200, 0.4);
 
   /* Fonts */
   --font-sans: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
   --font-heading: 'Outfit', var(--font-sans);
 
-  /* Border Radii */
-  --radius-sm: 6px;
-  --radius-md: 12px;
-  --radius-lg: 16px;
-  --radius-xl: 24px;
-  --radius-full: 9999px;
+  /* Straight-box house style */
+  --radius-sm: 0;
+  --radius-md: 0;
+  --radius-lg: 0;
+  --radius-xl: 0;
+  --radius-full: 0;
 
   /* Transitions */
   --transition-all: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
@@ -90,6 +96,7 @@ button, input, select, textarea {
 .flex { display: flex; }
 .flex-col { flex-direction: column; }
 .align-center { align-items: center; }
+.align-start { align-items: flex-start; }
 .justify-between { justify-content: space-between; }
 .justify-center { justify-content: center; }
 .flex-wrap { flex-wrap: wrap; }
@@ -130,18 +137,54 @@ button, input, select, textarea {
 .mb-4 { margin-bottom: 1rem; }
 .mb-6 { margin-bottom: 1.5rem; }
 
-/* --- Glassmorphism --- */
+/* --- Super Parent Shared Surfaces --- */
+.sp-variant-productivity {
+  --app-bg: #FFF8DD;
+  --app-accent: var(--accent-sage);
+  --app-accent-2: var(--accent-slate);
+  --app-accent-3: var(--accent-mustard);
+  --app-panel-shadow: 4px 4px 0 rgba(23, 19, 20, 0.88);
+}
+
+.sp-variant-knowledge {
+  --app-bg: #FFF8DD;
+  --app-accent: var(--accent-terracotta);
+  --app-accent-2: var(--accent-mustard);
+  --app-accent-3: var(--accent-slate);
+  --app-panel-shadow: 6px 6px 0 var(--ink);
+}
+
+.sp-variant-fun {
+  --app-bg: #FFF8DD;
+  --app-accent: var(--accent-mustard);
+  --app-accent-2: var(--accent-terracotta);
+  --app-accent-3: var(--accent-blue);
+  --app-panel-shadow: 8px 8px 0 var(--ink);
+}
+
+.sp-app-shell {
+  min-height: 100vh;
+  background:
+    linear-gradient(rgba(23, 19, 20, 0.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(23, 19, 20, 0.045) 1px, transparent 1px),
+    var(--app-bg);
+  background-size: 28px 28px, 28px 28px, auto;
+}
+
+.sp-panel,
 .glass {
-  background: var(--glass-bg);
-  backdrop-filter: blur(var(--glass-blur));
-  -webkit-backdrop-filter: blur(var(--glass-blur));
-  border: 1px solid var(--glass-border);
-  box-shadow: var(--glass-shadow);
+  background: var(--surface);
+  border: var(--app-panel-border);
+  box-shadow: var(--app-panel-shadow);
   border-radius: var(--radius-md);
 }
 
+.sp-card,
 .glass-card {
-  composes: glass;
+  background: var(--surface);
+  border: var(--app-panel-border);
+  box-shadow: var(--app-panel-shadow);
+  border-radius: var(--radius-md);
   padding: 1.5rem;
   transition: var(--transition-all);
 }
@@ -151,10 +194,9 @@ button, input, select, textarea {
 }
 
 .glass-interactive:hover {
-  transform: translateY(-2px);
-  background: rgba(255, 255, 255, 0.6);
-  border-color: rgba(255, 255, 255, 0.5);
-  box-shadow: 0 12px 40px 0 rgba(142, 137, 133, 0.12);
+  transform: translate(-2px, -2px);
+  background: var(--surface-soft);
+  box-shadow: 8px 8px 0 var(--ink);
 }
 
 /* --- Buttons --- */
@@ -166,7 +208,7 @@ button, input, select, textarea {
   font-size: 0.95rem;
   padding: 0.625rem 1.25rem;
   border-radius: var(--radius-md);
-  border: 1px solid transparent;
+  border: 2px solid var(--ink);
   cursor: pointer;
   transition: var(--transition-all);
   outline: none;
@@ -174,32 +216,39 @@ button, input, select, textarea {
 }
 
 .btn:focus-visible {
-  outline: 2px solid var(--accent-slate);
+  outline: 3px solid var(--app-accent);
   outline-offset: 2px;
 }
 
 .btn-primary {
-  background-color: var(--accent-slate);
-  color: #FFFFFF;
+  background-color: var(--app-accent);
+  color: var(--ink);
+  box-shadow: 3px 3px 0 var(--ink);
+  font-weight: 800;
 }
 
 .btn-primary:hover {
-  background-color: var(--accent-slate-hover);
+  background-color: var(--app-accent);
+  transform: translate(-1px, -1px);
+  box-shadow: 4px 4px 0 var(--ink);
 }
 
 .btn-secondary {
-  background-color: rgba(45, 43, 42, 0.05);
+  background-color: #FFFFFF;
   color: var(--text-primary);
-  border-color: rgba(45, 43, 42, 0.1);
+  border-color: var(--ink);
+  font-weight: 750;
 }
 
 .btn-secondary:hover {
-  background-color: rgba(45, 43, 42, 0.1);
+  background-color: var(--surface-soft);
 }
 
 .btn-sage {
   background-color: var(--accent-sage);
   color: #FFFFFF;
+  box-shadow: 3px 3px 0 var(--ink);
+  font-weight: 800;
 }
 
 .btn-sage:hover {
@@ -209,6 +258,8 @@ button, input, select, textarea {
 .btn-terracotta {
   background-color: var(--accent-terracotta);
   color: #FFFFFF;
+  box-shadow: 3px 3px 0 var(--ink);
+  font-weight: 800;
 }
 
 .btn-terracotta:hover {
@@ -218,7 +269,7 @@ button, input, select, textarea {
 .btn-outline {
   background-color: transparent;
   color: var(--text-primary);
-  border: 1px solid var(--border-color);
+  border: 2px solid var(--ink);
 }
 
 .btn-outline:hover {
@@ -229,15 +280,15 @@ button, input, select, textarea {
 .btn-icon {
   padding: 0.5rem;
   border-radius: var(--radius-sm);
-  background: transparent;
-  border: none;
+  background: #FFFFFF;
+  border: 2px solid var(--ink);
   cursor: pointer;
   color: var(--text-secondary);
   transition: var(--transition-all);
 }
 
 .btn-icon:hover {
-  background: rgba(45, 43, 42, 0.05);
+  background: var(--app-accent-2);
   color: var(--text-primary);
 }
 
@@ -260,15 +311,15 @@ button, input, select, textarea {
   padding: 0.625rem 0.875rem;
   font-size: 0.95rem;
   border-radius: var(--radius-md);
-  border: 1px solid rgba(45, 43, 42, 0.15);
-  background-color: rgba(255, 255, 255, 0.6);
+  border: 2px solid var(--ink);
+  background-color: var(--surface-soft);
   color: var(--text-primary);
   transition: var(--transition-all);
   outline: none;
 }
 
 .form-input:focus, .form-select:focus, .form-textarea:focus {
-  border-color: var(--accent-slate);
+  border-color: var(--ink);
   box-shadow: 0 0 0 3px var(--focus-ring);
   background-color: #FFFFFF;
 }
@@ -291,34 +342,32 @@ button, input, select, textarea {
   font-size: 0.75rem;
   font-weight: 600;
   border-radius: var(--radius-full);
-  letter-spacing: 0.025em;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
+  border: 2px solid var(--ink);
 }
 
 /* Idea / Researching status badge */
 .badge-idea {
-  background-color: rgba(220, 161, 52, 0.12);
-  color: #946307;
-  border: 1px solid rgba(220, 161, 52, 0.25);
+  background-color: var(--accent-mustard);
+  color: var(--ink);
 }
 
 /* Waitlisted status badge */
 .badge-waitlisted {
-  background-color: rgba(195, 106, 85, 0.12);
-  color: #B2533E;
-  border: 1px solid rgba(195, 106, 85, 0.25);
+  background-color: var(--accent-terracotta);
+  color: #FFFFFF;
 }
 
 /* Booked status badge */
 .badge-booked {
-  background-color: rgba(110, 130, 104, 0.12);
-  color: #556B50;
-  border: 1px solid rgba(110, 130, 104, 0.25);
+  background-color: var(--accent-sage);
+  color: #FFFFFF;
 }
 
 /* --- Keyboard & Focus State Utilities --- */
 *:focus-visible {
-  outline: 2px solid var(--accent-slate);
+  outline: 3px solid var(--app-accent);
   outline-offset: 2px;
 }
 

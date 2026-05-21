@@ -166,10 +166,11 @@ export default function Dashboard() {
   }
 
   return (
-    <main className="container py-6">
+    <main className="sp-app-shell sp-variant-productivity">
+      <div className="container py-6">
       {/* Header Bar */}
       <header className="mb-6 flex justify-between align-center flex-wrap gap-4" style={{
-        borderBottom: '1px solid var(--border-color)',
+        borderBottom: '3px solid var(--ink)',
         paddingBottom: '1rem'
       }}>
         <div className="flex align-center gap-3">
@@ -178,7 +179,9 @@ export default function Dashboard() {
             color: '#FFFFFF',
             padding: '0.5rem',
             borderRadius: 'var(--radius-md)',
-            display: 'inline-flex'
+            display: 'inline-flex',
+            border: '3px solid var(--ink)',
+            boxShadow: '4px 4px 0 var(--ink)'
           }}>
             <CalendarRange size={24} />
           </div>
@@ -307,6 +310,7 @@ export default function Dashboard() {
           </div>
         </>
       )}
+      </div>
     </main>
   );
 }

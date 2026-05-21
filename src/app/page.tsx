@@ -7,6 +7,7 @@ import {
   Coffee,
   ExternalLink,
   HeartHandshake,
+  Radio,
   Sparkles,
 } from 'lucide-react';
 
@@ -20,32 +21,44 @@ const apps = [
     icon: CalendarRange,
     details: ['Week matrix', 'Budget tracking', 'Age and grade warnings'],
   },
+  {
+    title: 'Pop Trend Cheatsheet',
+    description: 'Decode playground slang, games, collectibles, and pop-culture signals without doom-scrolling.',
+    href: '/pop-trends',
+    status: 'New',
+    accent: 'var(--accent-terracotta)',
+    icon: Radio,
+    details: ['Trend cards', 'Parent translations', 'Local notes'],
+  },
 ];
 
 const upcomingApps = [
   'Family logistics dashboard',
   'School paperwork tracker',
-  'Activities and enrichment shortlist',
+  'Meal and lunchbox planner',
 ];
 
 export default function ToolkitHome() {
   return (
-    <main className="container py-8">
+    <main className="sp-app-shell sp-variant-fun">
+      <div className="container py-8">
       <header
         className="mb-6"
         style={{
-          borderBottom: '1px solid var(--border-color)',
+          borderBottom: '3px solid var(--ink)',
           paddingBottom: '1.25rem',
         }}
       >
         <div className="flex align-center gap-3 mb-4">
           <div
             style={{
-              backgroundColor: 'var(--accent-slate)',
-              color: '#FFFFFF',
+              backgroundColor: 'var(--app-accent)',
+              color: 'var(--ink)',
               padding: '0.65rem',
               borderRadius: 'var(--radius-md)',
               display: 'inline-flex',
+              border: '3px solid var(--ink)',
+              boxShadow: '4px 4px 0 var(--ink)',
             }}
           >
             <Sparkles size={24} />
@@ -70,7 +83,7 @@ export default function ToolkitHome() {
       >
         <div className="glass-card" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
           <div>
-            <div className="flex align-center gap-2 mb-4" style={{ color: 'var(--accent-sage)', fontWeight: 700 }}>
+            <div className="flex align-center gap-2 mb-4" style={{ color: 'var(--text-primary)', fontWeight: 900, textTransform: 'uppercase', fontSize: '0.8rem', letterSpacing: '0.04em' }}>
               <HeartHandshake size={18} />
               Toolkit home
             </div>
@@ -152,14 +165,15 @@ export default function ToolkitHome() {
                 <div className="flex justify-between align-start gap-3">
                   <div
                     style={{
-                      backgroundColor: 'rgba(110, 130, 104, 0.12)',
+                      backgroundColor: app.accent,
                       color: app.accent,
                       padding: '0.65rem',
                       borderRadius: 'var(--radius-md)',
                       display: 'inline-flex',
+                      border: '2px solid var(--ink)',
                     }}
                   >
-                    <Icon size={24} />
+                    <Icon size={24} style={{ color: app.href === '/pop-trends' ? '#FFFFFF' : '#FFFFFF' }} />
                   </div>
                   <span className="badge badge-booked">{app.status}</span>
                 </div>
@@ -175,11 +189,12 @@ export default function ToolkitHome() {
                       key={detail}
                       style={{
                         fontSize: '0.75rem',
-                        color: 'var(--text-secondary)',
-                        border: '1px solid var(--border-color)',
+                        color: 'var(--text-primary)',
+                        border: '2px solid var(--ink)',
                         borderRadius: 'var(--radius-full)',
                         padding: '0.25rem 0.55rem',
-                        backgroundColor: 'rgba(255, 255, 255, 0.35)',
+                        backgroundColor: 'var(--surface-soft)',
+                        fontWeight: 800,
                       }}
                     >
                       {detail}
@@ -196,6 +211,7 @@ export default function ToolkitHome() {
           })}
         </div>
       </section>
+      </div>
     </main>
   );
 }
