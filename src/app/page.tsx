@@ -4,6 +4,8 @@ import {
   CalendarRange,
   CheckCircle2,
   ClipboardList,
+  Coffee,
+  ExternalLink,
   HeartHandshake,
   Sparkles,
 } from 'lucide-react';
@@ -88,9 +90,22 @@ export default function ToolkitHome() {
         </div>
 
         <aside className="glass-card">
-          <div className="flex align-center gap-2 mb-4">
-            <ClipboardList size={18} style={{ color: 'var(--accent-slate)' }} />
-            <h3 style={{ fontSize: '1.1rem', margin: 0 }}>Next Toolkit Ideas</h3>
+          <div className="flex justify-between align-start gap-3 mb-4">
+            <div className="flex align-center gap-2">
+              <ClipboardList size={18} style={{ color: 'var(--accent-slate)' }} />
+              <h3 style={{ fontSize: '1.1rem', margin: 0 }}>Next Toolkit Ideas</h3>
+            </div>
+            <a
+              href="https://ko-fi.com/cannedkalle"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="btn btn-secondary"
+              style={{ fontSize: '0.8rem', padding: '0.45rem 0.7rem', whiteSpace: 'nowrap' }}
+            >
+              <Coffee size={14} />
+              Support
+              <ExternalLink size={13} />
+            </a>
           </div>
           <div className="flex flex-col gap-2">
             {upcomingApps.map((app) => (
