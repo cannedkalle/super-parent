@@ -148,7 +148,7 @@ export default function ChildrenManager({
               className="form-input"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="e.g. Leo"
+              placeholder="e.g. Wendy"
               required
               autoFocus
             />
@@ -232,16 +232,11 @@ export default function ChildrenManager({
                 background: 'rgba(255, 255, 255, 0.3)',
                 borderRadius: 'var(--radius-sm)',
                 borderLeft: `4px solid ${child.color}`,
+                paddingLeft: '1rem',
                 boxShadow: '0 1px 3px rgba(0, 0, 0, 0.02)'
               }}
             >
               <div className="flex align-center gap-2">
-                <div style={{
-                  width: '10px',
-                  height: '10px',
-                  borderRadius: '50%',
-                  backgroundColor: child.color
-                }} />
                 <div>
                   <span style={{ fontWeight: 600, fontSize: '0.95rem', display: 'block' }}>{child.name}</span>
                   {getAgeGradeOption(child.age, child.grade) && (

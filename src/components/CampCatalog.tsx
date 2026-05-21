@@ -539,7 +539,7 @@ export default function CampCatalog({
               className="form-input"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="e.g. Galileo Innovation Camp"
+              placeholder="e.g. Second Star Adventure Camp"
               required
             />
           </div>
@@ -553,7 +553,7 @@ export default function CampCatalog({
                 className="form-input"
                 value={provider}
                 onChange={(e) => setProvider(e.target.value)}
-                placeholder="e.g. Galileo Learning"
+                placeholder="e.g. Neverland Day Camps"
                 required
               />
             </div>
@@ -579,7 +579,7 @@ export default function CampCatalog({
               className="form-input"
               value={address}
               onChange={(e) => setAddress(e.target.value)}
-              placeholder="e.g. Seattle, WA"
+              placeholder="e.g. Neverland"
             />
           </div>
 

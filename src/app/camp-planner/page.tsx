@@ -9,7 +9,7 @@ import CampMatrix from '@/components/CampMatrix';
 import ShareImport from '@/components/ShareImport';
 import FinancialDashboard from '@/components/FinancialDashboard';
 import Link from 'next/link';
-import { RefreshCw, CalendarRange, ArrowLeft } from 'lucide-react';
+import { RefreshCw, CalendarRange, ArrowLeft, Trash2 } from 'lucide-react';
 
 export default function Dashboard() {
   const [mounted, setMounted] = useState(false);
@@ -127,6 +127,14 @@ export default function Dashboard() {
     }
   };
 
+  const handleClearPlannerData = async () => {
+    if (confirm('Clean out the mock children, camps, and bookings so you can start fresh?')) {
+      const { clearPlannerData } = await import('@/lib/db');
+      await clearPlannerData();
+      await loadAllData();
+    }
+  };
+
   // Import complete state override
   const handleImportState = async (importedState: {
     settings: CalendarSettings;
@@ -214,6 +222,14 @@ export default function Dashboard() {
           >
             <RefreshCw size={15} />
             Reset Mock Data
+          </button>
+          <button
+            className="btn btn-secondary"
+            onClick={handleClearPlannerData}
+            title="Remove mock children, camps, and bookings"
+          >
+            <Trash2 size={15} />
+            Clean Mock Data
           </button>
           
           <ShareImport

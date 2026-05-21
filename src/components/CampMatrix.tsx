@@ -368,15 +368,7 @@ export default function CampMatrix({
                     boxShadow: '0 2px 8px rgba(0, 0, 0, 0.02)'
                   }}
                 >
-                  <div className="flex justify-center align-center gap-2">
-                    <span style={{
-                      width: '8px',
-                      height: '8px',
-                      borderRadius: '50%',
-                      backgroundColor: child.color
-                    }} />
-                    {child.name}
-                  </div>
+                  {child.name}
                 </th>
               ))}
             </tr>

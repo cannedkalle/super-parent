@@ -142,14 +142,14 @@ export function seedData(): void {
   };
 
   // Generate unique UUIDs to link entities
-  const leoId = generateUUID();
-  const mayaId = generateUUID();
-  const tobyId = generateUUID();
+  const wendyId = generateUUID();
+  const johnId = generateUUID();
+  const michaelId = generateUUID();
 
   const children: Child[] = [
-    { id: leoId, name: 'Leo', color: '#3B82F6', age: 7, grade: '2', created_at: new Date().toISOString() }, // Blue
-    { id: mayaId, name: 'Maya', color: '#EC4899', age: 5, grade: 'K', created_at: new Date().toISOString() }, // Pink
-    { id: tobyId, name: 'Toby', color: '#10B981', age: 10, grade: '5', created_at: new Date().toISOString() }  // Emerald Green
+    { id: wendyId, name: 'Wendy', color: '#3B82F6', age: 10, grade: '5', created_at: new Date().toISOString() }, // Blue
+    { id: johnId, name: 'John', color: '#EC4899', age: 7, grade: '2', created_at: new Date().toISOString() }, // Pink
+    { id: michaelId, name: 'Michael', color: '#10B981', age: 5, grade: 'K', created_at: new Date().toISOString() }  // Emerald Green
   ];
 
   const camp1Id = generateUUID();
@@ -161,10 +161,10 @@ export function seedData(): void {
   const camps: Camp[] = [
     {
       id: camp1Id,
-      name: "Steve & Kate's Camp",
-      provider: "Steve & Kate's",
+      name: "Second Star Adventure Camp",
+      provider: "Neverland Day Camps",
       price: 550.00,
-      address: "123 Main St, Seattle",
+      address: "2 Second Star Lane, Neverland",
       min_age: 4,
       max_age: 12,
       min_grade: "Pre-K",
@@ -182,10 +182,10 @@ export function seedData(): void {
     },
     {
       id: camp2Id,
-      name: "Galileo Innovation Camp",
-      provider: "Galileo Learning",
+      name: "Lost Boys Maker Camp",
+      provider: "Hideout Workshop",
       price: 620.00,
-      address: "456 Oak Ave, Bellevue",
+      address: "456 Hollow Tree Road, Neverwood",
       min_age: 5,
       max_age: 12,
       min_grade: "K",
@@ -203,10 +203,10 @@ export function seedData(): void {
     },
     {
       id: camp3Id,
-      name: "Code Ninjas Robotics Camp",
-      provider: "Code Ninjas",
+      name: "Pixie Hollow Robotics Lab",
+      provider: "Tinker Studio",
       price: 450.00,
-      address: "789 Pine Rd, Kirkland",
+      address: "789 Pixie Dust Path, Neverland",
       min_age: 7,
       max_age: 14,
       min_grade: "2",
@@ -222,10 +222,10 @@ export function seedData(): void {
     },
     {
       id: camp4Id,
-      name: "YMCA Summer Adventure",
-      provider: "YMCA",
+      name: "Mermaid Lagoon Swim & Arts",
+      provider: "Lagoon League",
       price: 320.00,
-      address: "101 Broadway, Seattle",
+      address: "101 Lagoon Cove, Mermaid Bay",
       min_age: 5,
       max_age: 13,
       min_grade: "K",
@@ -243,10 +243,10 @@ export function seedData(): void {
     },
     {
       id: camp5Id,
-      name: "Arena Sports Camp",
-      provider: "Arena Sports",
+      name: "Jolly Roger Sports Camp",
+      provider: "Captain's Crew Athletics",
       price: 490.00,
-      address: "202 Arena Way, Redmond",
+      address: "202 Ship Deck Way, Pirate Harbor",
       min_age: 6,
       max_age: 12,
       min_grade: "1",
@@ -265,41 +265,41 @@ export function seedData(): void {
   const bookings: Booking[] = [
     {
       id: generateUUID(),
-      child_id: leoId,
+      child_id: wendyId,
       camp_id: camp1Id,
       summer_week_start: '2026-06-08',
       status: 'booked',
-      notes: 'Leo is signed up for Steve & Kate\'s for Week 1. Pack extra sunscreen and a water bottle.',
+      notes: 'Wendy is signed up for Second Star Adventure Camp for Week 1. Pack extra sunscreen and a water bottle.',
       amount_paid: 550.00,
       created_at: new Date().toISOString()
     },
     {
       id: generateUUID(),
-      child_id: leoId,
+      child_id: wendyId,
       camp_id: camp2Id,
       summer_week_start: '2026-06-15',
       status: 'researching',
-      notes: 'Leo is interested in Galileo. Wait to see if friends register too.',
+      notes: 'Wendy is interested in Lost Boys Maker Camp. Wait to see if friends register too.',
       amount_paid: 0.00,
       created_at: new Date().toISOString()
     },
     {
       id: generateUUID(),
-      child_id: mayaId,
+      child_id: johnId,
       camp_id: camp3Id,
       summer_week_start: '2026-06-08',
       status: 'waiting_to_register',
-      notes: 'Robotics camp for Week 1. Need to complete registration before end of week discount expires.',
+      notes: 'Pixie Hollow Robotics Lab for Week 1. Need to complete registration before end of week discount expires.',
       amount_paid: 100.00,
       created_at: new Date().toISOString()
     },
     {
       id: generateUUID(),
-      child_id: mayaId,
+      child_id: johnId,
       camp_id: camp4Id,
       summer_week_start: '2026-06-22',
       status: 'waitlisted',
-      notes: 'Maya is waitlisted for YMCA Week 3. We are currently #3 in the queue.',
+      notes: 'John is waitlisted for Mermaid Lagoon Week 3. We are currently #3 in the queue.',
       amount_paid: 0.00,
       created_at: new Date().toISOString()
     }
@@ -583,4 +583,15 @@ export async function resetDatabase(): Promise<void> {
   localStorage.removeItem(CAMPS_KEY);
   localStorage.removeItem(BOOKINGS_KEY);
   ensureInitialized();
+}
+
+/**
+ * Clears seeded planner records while keeping the current calendar settings.
+ */
+export async function clearPlannerData(): Promise<void> {
+  if (typeof window === 'undefined') return;
+  ensureInitialized();
+  localStorage.setItem(CHILDREN_KEY, JSON.stringify([]));
+  localStorage.setItem(CAMPS_KEY, JSON.stringify([]));
+  localStorage.setItem(BOOKINGS_KEY, JSON.stringify([]));
 }
