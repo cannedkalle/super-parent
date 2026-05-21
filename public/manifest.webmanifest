@@ -1,0 +1,41 @@
+{
+  "name": "Super Parent Toolkit",
+  "short_name": "Parent Toolkit",
+  "description": "A practical toolkit of planning apps for family logistics.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#FAF8F5",
+  "theme_color": "#5C788A",
+  "orientation": "any",
+  "categories": ["productivity", "lifestyle"],
+  "icons": [
+    {
+      "src": "/icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/maskable-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Camp Planner",
+      "short_name": "Camps",
+      "description": "Open the Summer Camp & Activity Planner.",
+      "url": "/camp-planner",
+      "icons": [
+        {
+          "src": "/icons/icon.svg",
+          "sizes": "any",
+          "type": "image/svg+xml"
+        }
+      ]
+    }
+  ]
+}

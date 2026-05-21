@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Super Parent Toolkit icon">
+  <rect width="512" height="512" fill="#5C788A"/>
+  <circle cx="256" cy="256" r="210" fill="#FAF8F5"/>
+  <rect x="118" y="138" width="276" height="244" rx="36" fill="#FFFFFF"/>
+  <path d="M168 196h176" stroke="#5C788A" stroke-width="24" stroke-linecap="round"/>
+  <path d="M168 256h120" stroke="#6E8268" stroke-width="24" stroke-linecap="round"/>
+  <path d="M168 316h158" stroke="#C36A55" stroke-width="24" stroke-linecap="round"/>
+  <circle cx="340" cy="256" r="30" fill="#DCA134"/>
+  <path d="M320 256l13 13 29-35" fill="none" stroke="#2D2B2A" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
