@@ -251,6 +251,7 @@ export default function ChildrenManager({
                   className="btn-icon"
                   onClick={() => handleOpenEdit(child)}
                   aria-label={`Edit ${child.name}'s profile`}
+                  title={`Edit ${child.name}`}
                   style={{ padding: '6px' }}
                 >
                   <Edit2 size={14} />
@@ -259,6 +260,7 @@ export default function ChildrenManager({
                   className="btn-icon"
                   onClick={() => handleDelete(child.id, child.name)}
                   aria-label={`Delete ${child.name}'s profile`}
+                  title={`Delete ${child.name}`}
                   style={{ padding: '6px', color: 'var(--accent-terracotta)' }}
                 >
                   <Trash2 size={14} />

@@ -1,3 +1,4 @@
+import { GoogleGenAI, Type } from '@google/genai';
 import { NextResponse } from 'next/server';
 
 export interface ScrapedCampData {
@@ -5,14 +6,22 @@ export interface ScrapedCampData {
   provider: string;
   price: number | null;
   location: string | null;
+  start_time?: string | null;
+  end_time?: string | null;
+  min_age?: number | null;
+  max_age?: number | null;
+  min_grade?: string | null;
+  max_grade?: string | null;
+  is_multiple_camps?: boolean;
+  ambiguity_reason?: string | null;
   notes: string;
   registration_url: string;
 }
 
 /**
- * Returns mock data for test domains or placeholders if fetch fails or is blocked.
+ * Returns a conservative placeholder if fetch fails or is blocked.
  */
-function getMockDataForUrl(url: string): ScrapedCampData {
+function getFallbackDataForUrl(url: string): ScrapedCampData {
   let hostname = '';
   try {
     hostname = new URL(url).hostname.toLowerCase();
@@ -20,62 +29,6 @@ function getMockDataForUrl(url: string): ScrapedCampData {
     hostname = url.toLowerCase();
   }
 
-  if (hostname.includes('steveandkates') || hostname.includes('steveandkate')) {
-    return {
-      title: "Steve & Kate's Summer Camp",
-      provider: "Steve & Kate's",
-      price: 550.00,
-      location: "123 Main St, Seattle, WA",
-      notes: "Flexible summer camp where kids choose their own activities, including robotics, sewing, bakery, film, and sports. Register for single days or the whole summer.",
-      registration_url: url
-    };
-  }
-
-  if (hostname.includes('galileo') || hostname.includes('campgalileo')) {
-    return {
-      title: "Galileo Summer Innovation Camp",
-      provider: "Galileo Learning",
-      price: 620.00,
-      location: "456 Oak Ave, Bellevue, WA",
-      notes: "Engaging STEM, art, and innovation programs. Kids collaborate on building projects, scientific experiments, and creative designs.",
-      registration_url: url
-    };
-  }
-
-  if (hostname.includes('codeninjas')) {
-    return {
-      title: "Code Ninjas Game Design & Robotics Camp",
-      provider: "Code Ninjas",
-      price: 450.00,
-      location: "789 Pine Rd, Kirkland, WA",
-      notes: "Fun half-day and full-day camps teaching kids Scratch, Python, Roblox, Minecraft modding, and LEGO robotics.",
-      registration_url: url
-    };
-  }
-
-  if (hostname.includes('ymca')) {
-    return {
-      title: "YMCA Summer Adventure Camp",
-      provider: "YMCA",
-      price: 320.00,
-      location: "101 Broadway, Seattle, WA",
-      notes: "Classic summer outdoor and indoor activities, swimming lessons, arts & crafts, group games, and field trips. Scholarships available.",
-      registration_url: url
-    };
-  }
-
-  if (hostname.includes('arenasports')) {
-    return {
-      title: "Arena Sports Summer Soccer & Fun Camp",
-      provider: "Arena Sports",
-      price: 490.00,
-      location: "202 Arena Way, Redmond, WA",
-      notes: "High-energy indoor sports camp focused on soccer, dodgeball, laser tag, inflatable play, and team-building games.",
-      registration_url: url
-    };
-  }
-
-  // General fallback placeholder
   let providerName = 'Unknown Provider';
   const parts = hostname.replace('www.', '').split('.');
   if (parts.length > 0 && parts[0]) {
@@ -85,11 +38,95 @@ function getMockDataForUrl(url: string): ScrapedCampData {
   return {
     title: `${providerName} Summer Camp Program`,
     provider: providerName,
-    price: 395.00,
+    price: null,
     location: null,
-    notes: `Summer program and activities hosted by ${providerName}. Visit the registration link for full schedule details and enrollment dates.`,
+    start_time: null,
+    end_time: null,
+    min_age: null,
+    max_age: null,
+    min_grade: null,
+    max_grade: null,
+    is_multiple_camps: false,
+    ambiguity_reason: null,
+    notes: `Could not read this page automatically. Review the original link for schedule, pricing, and registration details.`,
     registration_url: url
   };
+}
+
+function htmlToText(html: string): string {
+  return html
+    .replace(/<script[\s\S]*?<\/script>/gi, ' ')
+    .replace(/<style[\s\S]*?<\/style>/gi, ' ')
+    .replace(/<noscript[\s\S]*?<\/noscript>/gi, ' ')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&amp;/g, '&')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/\s+/g, ' ')
+    .trim()
+    .slice(0, 18000);
+}
+
+function normalizeImportedData(data: Partial<ScrapedCampData>, url: string): ScrapedCampData {
+  return {
+    title: data.title?.trim() || 'Camp Details',
+    provider: data.provider?.trim() || 'Unknown Provider',
+    price: typeof data.price === 'number' && Number.isFinite(data.price) ? data.price : null,
+    location: data.location?.trim() || null,
+    start_time: data.start_time?.trim() || null,
+    end_time: data.end_time?.trim() || null,
+    min_age: typeof data.min_age === 'number' && Number.isFinite(data.min_age) ? data.min_age : null,
+    max_age: typeof data.max_age === 'number' && Number.isFinite(data.max_age) ? data.max_age : null,
+    min_grade: data.min_grade?.trim() || null,
+    max_grade: data.max_grade?.trim() || null,
+    is_multiple_camps: Boolean(data.is_multiple_camps),
+    ambiguity_reason: data.ambiguity_reason?.trim() || null,
+    notes: data.notes?.trim() || '',
+    registration_url: data.registration_url || url,
+  };
+}
+
+async function extractWithAI(html: string, url: string, metadata: ScrapedCampData): Promise<ScrapedCampData | null> {
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey) return null;
+
+  const ai = new GoogleGenAI({ apiKey });
+  const text = htmlToText(html);
+  const response = await ai.models.generateContent({
+    model: 'gemini-3.1-flash-lite',
+    contents: [
+      'Extract summer camp details from this webpage text. Return only facts stated or strongly implied by the page. Use null for unknown fields. Times should look like "9:00 AM". Price should be a number for one week/session when clear. If the page lists multiple distinct camps, sessions, locations, or program options instead of one specific camp, set is_multiple_camps to true and explain briefly in ambiguity_reason.',
+      `URL: ${url}`,
+      `Existing metadata: ${JSON.stringify(metadata)}`,
+      `Page text: ${text}`,
+    ].join('\n\n'),
+    config: {
+      responseMimeType: 'application/json',
+      responseSchema: {
+        type: Type.OBJECT,
+        properties: {
+          title: { type: Type.STRING },
+          provider: { type: Type.STRING },
+          price: { type: Type.NUMBER, nullable: true },
+          location: { type: Type.STRING, nullable: true },
+          start_time: { type: Type.STRING, nullable: true },
+          end_time: { type: Type.STRING, nullable: true },
+          min_age: { type: Type.NUMBER, nullable: true },
+          max_age: { type: Type.NUMBER, nullable: true },
+          min_grade: { type: Type.STRING, nullable: true },
+          max_grade: { type: Type.STRING, nullable: true },
+          is_multiple_camps: { type: Type.BOOLEAN },
+          ambiguity_reason: { type: Type.STRING, nullable: true },
+          notes: { type: Type.STRING },
+        },
+        required: ['title', 'provider', 'price', 'location', 'start_time', 'end_time', 'min_age', 'max_age', 'min_grade', 'max_grade', 'is_multiple_camps', 'ambiguity_reason', 'notes'],
+      },
+    },
+  });
+
+  if (!response.text) return null;
+  return normalizeImportedData(JSON.parse(response.text), url);
 }
 
 /**
@@ -289,19 +326,33 @@ export async function POST(request: Request) {
     }
 
     const html = await response.text();
-    const parsed = extractMetadata(html, urlStr);
+    const metadataParsed = extractMetadata(html, urlStr);
+    let parsed = metadataParsed;
+    let parsedByAI = false;
+
+    try {
+      const aiParsed = await extractWithAI(html, urlStr, metadataParsed);
+      if (aiParsed) {
+        parsed = aiParsed;
+        parsedByAI = true;
+      }
+    } catch (aiError: any) {
+      console.warn(`AI extraction failed for "${urlStr}". Using metadata parser:`, aiError.message);
+    }
 
     return NextResponse.json({
       ...parsed,
-      _parsedFromFetch: true
+      _parsedFromFetch: true,
+      _parsedByAI: parsedByAI
     });
 
   } catch (error: any) {
-    console.warn(`Direct fetch to "${urlStr}" failed or timed out. Falling back to mock scraper:`, error.message);
-    const fallbackData = getMockDataForUrl(urlStr);
+    console.warn(`Direct fetch to "${urlStr}" failed or timed out. Returning conservative fallback:`, error.message);
+    const fallbackData = getFallbackDataForUrl(urlStr);
     return NextResponse.json({
       ...fallbackData,
       _parsedFromFetch: false,
+      _parsedByAI: false,
       _error: error.message
     });
   }

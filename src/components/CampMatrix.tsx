@@ -611,6 +611,7 @@ export default function CampMatrix({
                 className="btn-icon"
                 onClick={handleCloseDialog}
                 aria-label="Close dialog"
+                title="Close"
               >
                 <X size={18} />
               </button>

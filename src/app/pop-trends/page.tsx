@@ -1,10 +1,12 @@
 'use client';
 
 import Link from 'next/link';
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   ArrowLeft,
+  CalendarDays,
   CheckCircle2,
+  Download,
   Edit2,
   Flame,
   Gamepad2,
@@ -17,9 +19,10 @@ import {
   Star,
   Tags,
   Trash2,
+  Upload,
 } from 'lucide-react';
 
-type TrendCategory = 'Slang' | 'Games' | 'Shows & Music' | 'Toys & Collectibles' | 'Style' | 'Watch';
+type TrendCategory = 'Memes & Slang' | 'Games' | 'Shows & Music' | 'Toys & Collectibles' | 'Style';
 type Familiarity = 'New to me' | 'Heard it' | 'I get it';
 
 interface TrendCard {
@@ -37,16 +40,24 @@ interface TrendCard {
   updated: string;
 }
 
-const STORAGE_KEY = 'super_parent_pop_trend_cheatsheet';
+interface DailyFeedEntry {
+  id: string;
+  date: string;
+  displayDate: string;
+  trends: TrendCard[];
+}
 
-const categories: TrendCategory[] = ['Slang', 'Games', 'Shows & Music', 'Toys & Collectibles', 'Style', 'Watch'];
+const FLASHCARD_STORAGE_KEY = 'super_parent_pop_trend_flashcards';
+const LEGACY_STORAGE_KEY = 'super_parent_pop_trend_cheatsheet';
+
+const categories: TrendCategory[] = ['Memes & Slang', 'Games', 'Shows & Music', 'Toys & Collectibles', 'Style'];
 const statuses: Familiarity[] = ['New to me', 'Heard it', 'I get it'];
 
 const starterTrends: TrendCard[] = [
   {
     id: 'six-seven',
     title: '6-7',
-    category: 'Slang',
+    category: 'Memes & Slang',
     signal: 'Nonsense chant, classroom call-and-response, hand motion',
     meaning: 'Often used because it is funny to repeat, not because it has a fixed meaning.',
     parentTranslation: 'A social password. Kids are checking whether you are in on the joke.',
@@ -116,7 +127,7 @@ const starterTrends: TrendCard[] = [
   {
     id: 'brain-rot',
     title: 'Brain rot',
-    category: 'Watch',
+    category: 'Memes & Slang',
     signal: 'Kids calling something chaotic, repetitive, or absurd “brain rot”',
     meaning: 'A label for extremely online, low-context humor that can feel deliberately nonsensical.',
     parentTranslation: 'Sometimes it means “this is dumb.” Sometimes it means “this is dumb and I love it.”',
@@ -131,7 +142,7 @@ const starterTrends: TrendCard[] = [
 
 const blankTrend: Omit<TrendCard, 'id' | 'pinned' | 'updated'> = {
   title: '',
-  category: 'Slang',
+  category: 'Memes & Slang',
   signal: '',
   meaning: '',
   parentTranslation: '',
@@ -140,6 +151,58 @@ const blankTrend: Omit<TrendCard, 'id' | 'pinned' | 'updated'> = {
   ageBand: '',
   status: 'New to me',
 };
+
+const publicDailyFeedHistory: DailyFeedEntry[] = [
+  {
+    id: 'feed-2026-05-22',
+    date: 'May 22, 2026',
+    displayDate: '05/22 Friday',
+    trends: [
+      {
+        id: 'digest-italian-brainrot',
+        title: 'Italian brainrot animals',
+        category: 'Memes & Slang',
+        signal: 'Absurd animal-character names, surreal edits, repeated voices and catchphrases',
+        meaning: 'A short-form video meme cluster built around intentionally strange characters and repetition.',
+        parentTranslation: 'It is usually nonsense humor, but kids may treat knowing the names as a social badge.',
+        askPrompt: 'Which character is funniest, and which one is already annoying?',
+        watchOut: 'Good opening for a quick talk about when algorithmic clips stop being funny and become automatic scrolling.',
+        ageBand: 'Tweens',
+        status: 'New to me',
+        pinned: false,
+        updated: 'Public feed',
+      },
+      {
+        id: 'digest-grow-a-garden',
+        title: 'Grow a Garden',
+        category: 'Games',
+        signal: 'Roblox gardening, pets, seeds, trading, timed check-ins',
+        meaning: 'A cozy collection/progression game loop where kids compare gardens, rare items, and progress.',
+        parentTranslation: 'Less about gardening than status, scarcity, and “I need to check my stuff.”',
+        askPrompt: 'What is the rarest thing people are trying to get?',
+        watchOut: 'Watch timed rewards, trading pressure, and requests for Robux or private-server play.',
+        ageBand: 'Kids + tweens',
+        status: 'New to me',
+        pinned: false,
+        updated: 'Public feed',
+      },
+      {
+        id: 'digest-sephora-kids',
+        title: 'Sephora kids',
+        category: 'Style',
+        signal: 'Skincare wishlists, product routines, tween beauty hauls',
+        meaning: 'Kids and tweens copying beauty/influencer routines earlier than parents may expect.',
+        parentTranslation: 'The trend mixes identity play, peer status, influencer marketing, and expensive products.',
+        askPrompt: 'Which products are actually useful, and which ones are just popular online?',
+        watchOut: 'Check ingredient safety, body-image pressure, spending, and whether routines are age-appropriate.',
+        ageBand: 'Tweens + teens',
+        status: 'New to me',
+        pinned: false,
+        updated: 'Public feed',
+      },
+    ],
+  },
+];
 
 function createId() {
   return `trend-${Math.random().toString(16).slice(2)}-${Date.now()}`;
@@ -151,6 +214,24 @@ function getStatusClass(status: Familiarity) {
   return 'statusNew';
 }
 
+function trendMatchesSearch(trend: TrendCard, needle: string) {
+  if (!needle) return true;
+  return [
+    trend.title,
+    trend.category,
+    trend.signal,
+    trend.meaning,
+    trend.parentTranslation,
+    trend.askPrompt,
+    trend.watchOut,
+    trend.ageBand,
+    trend.updated,
+  ]
+    .join(' ')
+    .toLowerCase()
+    .includes(needle);
+}
+
 export default function PopTrendsPage() {
   const [mounted, setMounted] = useState(false);
   const [trends, setTrends] = useState<TrendCard[]>(starterTrends);
@@ -158,10 +239,17 @@ export default function PopTrendsPage() {
   const [category, setCategory] = useState<TrendCategory | 'All'>('All');
   const [editingId, setEditingId] = useState<string | null>(null);
   const [draft, setDraft] = useState(blankTrend);
+  const [trendTitleInput, setTrendTitleInput] = useState('');
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [generationError, setGenerationError] = useState('');
+  const [showFeedHistory, setShowFeedHistory] = useState(false);
+  const importFileRef = useRef<HTMLInputElement>(null);
+  const latestFeed = publicDailyFeedHistory[0];
+  const dailyDigestTrends = latestFeed.trends;
 
   useEffect(() => {
     setMounted(true);
-    const saved = window.localStorage.getItem(STORAGE_KEY);
+    const saved = window.localStorage.getItem(FLASHCARD_STORAGE_KEY) || window.localStorage.getItem(LEGACY_STORAGE_KEY);
     if (saved) {
       try {
         setTrends(JSON.parse(saved));
@@ -173,7 +261,7 @@ export default function PopTrendsPage() {
 
   useEffect(() => {
     if (mounted) {
-      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(trends));
+      window.localStorage.setItem(FLASHCARD_STORAGE_KEY, JSON.stringify(trends));
     }
   }, [mounted, trends]);
 
@@ -181,27 +269,88 @@ export default function PopTrendsPage() {
     const needle = query.trim().toLowerCase();
     return trends
       .filter((trend) => category === 'All' || trend.category === category)
-      .filter((trend) => {
-        if (!needle) return true;
-        return [
-          trend.title,
-          trend.category,
-          trend.signal,
-          trend.meaning,
-          trend.parentTranslation,
-          trend.askPrompt,
-          trend.watchOut,
-          trend.ageBand,
-        ]
-          .join(' ')
-          .toLowerCase()
-          .includes(needle);
-      })
+      .filter((trend) => trendMatchesSearch(trend, needle))
       .sort((a, b) => Number(b.pinned) - Number(a.pinned) || a.title.localeCompare(b.title));
   }, [category, query, trends]);
 
+  const filteredDailyFeedHistory = useMemo(() => {
+    const needle = query.trim().toLowerCase();
+    return publicDailyFeedHistory
+      .map((entry) => ({
+        ...entry,
+        trends: entry.trends
+          .filter((trend) => category === 'All' || trend.category === category)
+          .filter((trend) => trendMatchesSearch(trend, needle)),
+      }))
+      .filter((entry) => entry.trends.length > 0);
+  }, [category, query]);
+
+  const visibleDigestTrends = filteredDailyFeedHistory[0]?.trends || [];
+
   const pinnedCount = trends.filter((trend) => trend.pinned).length;
   const knownCount = trends.filter((trend) => trend.status === 'I get it').length;
+
+  const isReviewingDraft = Boolean(editingId || draft.title.trim());
+
+  const addDigestTrend = (trend: TrendCard) => {
+    setTrends((current) => {
+      if (current.some((item) => item.title.toLowerCase() === trend.title.toLowerCase())) {
+        return current;
+      }
+
+      return [
+        {
+          ...trend,
+          id: createId(),
+          pinned: false,
+          updated: 'Added from digest',
+        },
+        ...current,
+      ];
+    });
+  };
+
+  const handleGenerateDraft = async (event: React.FormEvent) => {
+    event.preventDefault();
+    const title = trendTitleInput.trim();
+    if (!title) return;
+
+    setIsGenerating(true);
+    setGenerationError('');
+
+    try {
+      const response = await fetch('/api/generate-trend', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ title }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Could not generate a trend card.');
+      }
+
+      const generated = await response.json();
+      setDraft({
+        title: generated.title || title,
+        category: generated.category || 'Memes & Slang',
+        signal: generated.signal || '',
+        meaning: generated.meaning || '',
+        parentTranslation: generated.parentTranslation || '',
+        askPrompt: generated.askPrompt || '',
+        watchOut: generated.watchOut || '',
+        ageBand: generated.ageBand || '',
+        status: generated.status || 'New to me',
+      });
+      setEditingId(null);
+    } catch (error: any) {
+      console.error(error);
+      setGenerationError(error.message || 'Could not generate a trend card.');
+    } finally {
+      setIsGenerating(false);
+    }
+  };
 
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
@@ -230,6 +379,8 @@ export default function PopTrendsPage() {
 
     setEditingId(null);
     setDraft(blankTrend);
+    setTrendTitleInput('');
+    setGenerationError('');
   };
 
   const handleEdit = (trend: TrendCard) => {
@@ -245,6 +396,8 @@ export default function PopTrendsPage() {
       ageBand: trend.ageBand,
       status: trend.status,
     });
+    setTrendTitleInput('');
+    setGenerationError('');
   };
 
   const handleDelete = (id: string) => {
@@ -260,6 +413,75 @@ export default function PopTrendsPage() {
       setDraft(blankTrend);
       setQuery('');
       setCategory('All');
+    }
+  };
+
+  const handleRemoveMockData = () => {
+    if (confirm('Remove the starter/mock flashcards so you can start with an empty collection?')) {
+      setTrends([]);
+      setEditingId(null);
+      setDraft(blankTrend);
+      setTrendTitleInput('');
+      setGenerationError('');
+      setQuery('');
+      setCategory('All');
+    }
+  };
+
+  const handleExportFlashcards = () => {
+    const payload = {
+      version: 1,
+      exported_at: new Date().toISOString(),
+      flashcards: trends,
+    };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `pop_trend_flashcards_${new Date().toISOString().split('T')[0]}.json`;
+    link.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const isTrendCard = (value: any): value is TrendCard => {
+    return Boolean(
+      value &&
+        typeof value.id === 'string' &&
+        typeof value.title === 'string' &&
+        categories.includes(value.category) &&
+        typeof value.signal === 'string' &&
+        typeof value.meaning === 'string' &&
+        typeof value.parentTranslation === 'string' &&
+        typeof value.askPrompt === 'string' &&
+        typeof value.watchOut === 'string' &&
+        typeof value.ageBand === 'string' &&
+        statuses.includes(value.status) &&
+        typeof value.pinned === 'boolean' &&
+        typeof value.updated === 'string'
+    );
+  };
+
+  const handleImportFlashcards = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    try {
+      const parsed = JSON.parse(await file.text());
+      const imported = Array.isArray(parsed) ? parsed : parsed.flashcards;
+      if (!Array.isArray(imported) || !imported.every(isTrendCard)) {
+        throw new Error('Invalid flashcard backup file.');
+      }
+      setTrends(imported);
+      setEditingId(null);
+      setDraft(blankTrend);
+      setTrendTitleInput('');
+      setGenerationError('');
+      setQuery('');
+      setCategory('All');
+    } catch (error: any) {
+      alert(error.message || 'Could not import flashcards.');
+    } finally {
+      event.target.value = '';
     }
   };
 
@@ -391,7 +613,7 @@ export default function PopTrendsPage() {
 
         .controlBand {
           display: grid;
-          grid-template-columns: minmax(240px, 1fr) auto auto;
+          grid-template-columns: minmax(240px, 1fr) auto;
           gap: 0.75rem;
           align-items: center;
           background: #171314;
@@ -451,6 +673,25 @@ export default function PopTrendsPage() {
           background: var(--app-accent-3);
         }
 
+        .smallAction {
+          min-height: 34px;
+          padding: 0.35rem 0.55rem;
+          font-size: 0.72rem;
+          box-shadow: 2px 2px 0 #171314;
+          border-color: #171314;
+        }
+
+        .smallAction:hover {
+          box-shadow: 3px 3px 0 #171314;
+        }
+
+        .collectionActions {
+          display: flex;
+          gap: 0.45rem;
+          flex-wrap: wrap;
+          justify-content: flex-end;
+        }
+
         .workspace {
           display: grid;
           grid-template-columns: 350px minmax(0, 1fr);
@@ -458,9 +699,21 @@ export default function PopTrendsPage() {
           align-items: start;
         }
 
-        .editorPanel {
+        .sideRail {
           position: sticky;
           top: 1rem;
+          display: grid;
+          gap: 1rem;
+        }
+
+        .digestPanel {
+          background: #fff;
+          border: 3px solid #171314;
+          box-shadow: 8px 8px 0 var(--app-accent);
+          padding: 1rem;
+        }
+
+        .editorPanel {
           background: #fff;
           border: 3px solid #171314;
           box-shadow: 8px 8px 0 var(--app-accent-3);
@@ -517,11 +770,129 @@ export default function PopTrendsPage() {
           gap: 0.55rem;
         }
 
+        .digestList {
+          display: grid;
+          gap: 0.75rem;
+        }
+
+        .digestMeta {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          gap: 0.75rem;
+          margin: -0.35rem 0 0.75rem;
+        }
+
+        .dateStamp {
+          display: inline-flex;
+          align-items: center;
+          border: 2px solid #171314;
+          background: var(--app-accent-2);
+          color: #171314;
+          padding: 0.25rem 0.45rem;
+          font-size: 0.78rem;
+          font-weight: 950;
+          text-transform: uppercase;
+        }
+
+        .historyButton {
+          min-height: 32px;
+          padding: 0.3rem 0.45rem;
+          border: 2px solid #171314;
+          background: #ffffff;
+          color: #171314;
+          display: inline-flex;
+          align-items: center;
+          gap: 0.35rem;
+          font-size: 0.72rem;
+          font-weight: 950;
+          cursor: pointer;
+          white-space: nowrap;
+        }
+
+        .feedHistory {
+          display: grid;
+          gap: 0.45rem;
+          margin-bottom: 0.75rem;
+        }
+
+        .feedHistory button {
+          border: 2px solid rgba(23, 19, 20, 0.32);
+          background: #fffdf4;
+          color: #171314;
+          padding: 0.45rem;
+          text-align: left;
+          font-weight: 900;
+          cursor: pointer;
+        }
+
+        .digestCard {
+          background: #fffdf4;
+          border: 2px solid #171314;
+          padding: 0.75rem;
+        }
+
+        .digestCard h3 {
+          font-size: 1rem;
+          text-transform: uppercase;
+        }
+
+        .digestCard p {
+          margin: 0.35rem 0 0.65rem;
+          color: #443a3d;
+          font-size: 0.82rem;
+          font-weight: 700;
+        }
+
+        .digestCard button {
+          width: 100%;
+        }
+
+        .hintText {
+          color: #5a4d50;
+          font-size: 0.78rem;
+          font-weight: 750;
+          margin-top: 0.5rem;
+        }
+
+        .errorText {
+          color: #b42318;
+          font-size: 0.78rem;
+          font-weight: 850;
+        }
+
         .trendGrid {
           display: grid;
           grid-template-columns: repeat(auto-fill, minmax(285px, 1fr));
           gap: 1rem;
           align-items: stretch;
+        }
+
+        .flashcardSection {
+          display: grid;
+          gap: 0.75rem;
+        }
+
+        .flashcardHead {
+          display: flex;
+          justify-content: space-between;
+          gap: 1rem;
+          align-items: center;
+          background: #ffffff;
+          border: 3px solid #171314;
+          box-shadow: 5px 5px 0 #171314;
+          padding: 0.7rem 0.85rem;
+        }
+
+        .flashcardHead h2 {
+          font-size: 1.15rem;
+          text-transform: uppercase;
+        }
+
+        .flashcardHead p {
+          color: #5a4d50;
+          font-size: 0.78rem;
+          font-weight: 800;
         }
 
         .trendCard {
@@ -676,7 +1047,7 @@ export default function PopTrendsPage() {
             min-width: 0;
           }
 
-          .editorPanel {
+          .sideRail {
             position: static;
           }
         }
@@ -761,31 +1132,106 @@ export default function PopTrendsPage() {
               ))}
             </select>
           </label>
-
-          <button type="button" className="popButton secondary" onClick={handleReset}>
-            <RefreshCw size={17} />
-            Reset deck
-          </button>
         </section>
 
         <div className="workspace">
-          <aside className="editorPanel">
-            <div className="panelHead">
-              <h2>{editingId ? 'Edit card' : 'Add a signal'}</h2>
-              <Sparkles size={20} />
-            </div>
-
-            <form className="formGrid" onSubmit={handleSubmit}>
-              <div className="field">
-                <label htmlFor="trendTitle">Trend name</label>
-                <input
-                  id="trendTitle"
-                  value={draft.title}
-                  onChange={(event) => setDraft((current) => ({ ...current, title: event.target.value }))}
-                  placeholder="e.g. a phrase, game, toy, song"
-                  required
-                />
+          <aside className="sideRail">
+            <section className="digestPanel">
+              <div className="panelHead">
+                <h2>Daily digest</h2>
+                <Flame size={20} />
               </div>
+              <div className="digestMeta">
+                <span className="dateStamp">{latestFeed.displayDate}</span>
+                <button
+                  type="button"
+                  className="historyButton"
+                  onClick={() => setShowFeedHistory((current) => !current)}
+                  aria-expanded={showFeedHistory}
+                  title="Review public digest history"
+                >
+                  <CalendarDays size={14} />
+                  History
+                </button>
+              </div>
+              {showFeedHistory && (
+                <div className="feedHistory">
+                  {publicDailyFeedHistory.map((entry) => (
+                    <button key={entry.id} type="button" disabled={entry.id === latestFeed.id}>
+                      {entry.displayDate} · {entry.trends.length} cards
+                    </button>
+                  ))}
+                </div>
+              )}
+              <p className="hintText" style={{ margin: '0 0 0.75rem' }}>
+                Public feed history. Search filters these digest cards and your browser-saved flashcards.
+              </p>
+              <div className="digestList">
+                {visibleDigestTrends.length === 0 ? (
+                  <div className="emptyState" style={{ boxShadow: 'none', padding: '1rem', fontSize: '0.85rem' }}>
+                    No public digest cards match this search.
+                  </div>
+                ) : (
+                  visibleDigestTrends.map((trend) => {
+                    const alreadyAdded = trends.some((item) => item.title.toLowerCase() === trend.title.toLowerCase());
+                    return (
+                      <div className="digestCard" key={trend.id}>
+                        <div className="categoryPill">{trend.category}</div>
+                        <h3>{trend.title}</h3>
+                        <p>{trend.parentTranslation}</p>
+                        <button
+                          type="button"
+                          className="popButton"
+                          onClick={() => addDigestTrend(trend)}
+                          disabled={alreadyAdded}
+                        >
+                          <Plus size={15} />
+                          {alreadyAdded ? 'In flashcards' : 'Add to flashcards'}
+                        </button>
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+            </section>
+
+            <section className="editorPanel">
+              <div className="panelHead">
+                <h2>{editingId ? 'Edit flashcard' : isReviewingDraft ? 'Review AI card' : 'Make a flashcard'}</h2>
+                <Sparkles size={20} />
+              </div>
+
+              {!isReviewingDraft ? (
+                <form className="formGrid" onSubmit={handleGenerateDraft}>
+                  <div className="field">
+                    <label htmlFor="trendIdeaTitle">Trend name</label>
+                    <input
+                      id="trendIdeaTitle"
+                      value={trendTitleInput}
+                      onChange={(event) => setTrendTitleInput(event.target.value)}
+                      placeholder="e.g. a phrase, game, toy, song"
+                      required
+                    />
+                  </div>
+                  <button type="submit" className="popButton" disabled={isGenerating}>
+                    <Sparkles size={17} />
+                    {isGenerating ? 'Building card...' : 'Build with AI'}
+                  </button>
+                  <p className="hintText">Enter only the title. AI fills the review card, then you can make small edits before adding it.</p>
+                  {generationError && <p className="errorText">{generationError}</p>}
+                </form>
+              ) : (
+                <form className="formGrid" onSubmit={handleSubmit}>
+                  <div className="field">
+                    <label htmlFor="trendTitle">Trend name</label>
+                    <input
+                      id="trendTitle"
+                      value={draft.title}
+                      onChange={(event) => setDraft((current) => ({ ...current, title: event.target.value }))}
+                      placeholder="e.g. a phrase, game, toy, song"
+                      required
+                    />
+                  </div>
 
               <div className="field">
                 <label htmlFor="trendCategory">Category</label>
@@ -877,31 +1323,67 @@ export default function PopTrendsPage() {
                 </select>
               </div>
 
-              <div className="formActions">
-                <button type="submit" className="popButton">
-                  <Plus size={17} />
-                  {editingId ? 'Save' : 'Add'}
-                </button>
-                <button
-                  type="button"
-                  className="popButton secondary"
-                  onClick={() => {
-                    setEditingId(null);
-                    setDraft(blankTrend);
-                  }}
-                >
-                  Clear
-                </button>
-              </div>
-            </form>
+                  <div className="formActions">
+                    <button type="submit" className="popButton">
+                      <Plus size={17} />
+                      {editingId ? 'Save' : 'Add flashcard'}
+                    </button>
+                    <button
+                      type="button"
+                      className="popButton secondary"
+                      onClick={() => {
+                        setEditingId(null);
+                        setDraft(blankTrend);
+                        setGenerationError('');
+                      }}
+                    >
+                      Clear
+                    </button>
+                  </div>
+                </form>
+              )}
+            </section>
           </aside>
 
-          <section className="trendGrid" aria-label="Trend cheatsheet cards">
-            {filteredTrends.length === 0 ? (
-              <div className="emptyState">No trend cards match that filter.</div>
-            ) : (
-              filteredTrends.map((trend) => (
-                <article className="trendCard" key={trend.id}>
+          <section className="flashcardSection" aria-label="Flashcard collection">
+            <div className="flashcardHead">
+              <div>
+                <h2>Flashcard collection</h2>
+                <p>Browser-saved cards for review.</p>
+              </div>
+              <div className="collectionActions">
+                <button type="button" className="popButton secondary smallAction" onClick={handleRemoveMockData}>
+                  <Trash2 size={14} />
+                  Remove mock data
+                </button>
+                <button type="button" className="popButton secondary smallAction" onClick={handleExportFlashcards}>
+                  <Download size={14} />
+                  Export
+                </button>
+                <button type="button" className="popButton secondary smallAction" onClick={() => importFileRef.current?.click()}>
+                  <Upload size={14} />
+                  Import
+                </button>
+                <button type="button" className="popButton secondary smallAction" onClick={handleReset}>
+                  <RefreshCw size={14} />
+                  Reset collection
+                </button>
+                <input
+                  ref={importFileRef}
+                  type="file"
+                  accept="application/json,.json"
+                  onChange={handleImportFlashcards}
+                  style={{ display: 'none' }}
+                />
+              </div>
+            </div>
+
+            <div className="trendGrid">
+              {filteredTrends.length === 0 ? (
+                <div className="emptyState">No trend cards match that filter.</div>
+              ) : (
+                filteredTrends.map((trend) => (
+                  <article className="trendCard" key={trend.id}>
                   <div className="trendCardHeader">
                     <div>
                       <div className="categoryPill">{trend.category}</div>
@@ -968,9 +1450,10 @@ export default function PopTrendsPage() {
                     <span className="agePill">{trend.ageBand || 'Any age'}</span>
                     <span>{trend.updated}</span>
                   </div>
-                </article>
-              ))
-            )}
+                  </article>
+                ))
+              )}
+            </div>
           </section>
         </div>
       </div>

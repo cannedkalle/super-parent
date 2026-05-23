@@ -9,7 +9,7 @@ import CampMatrix from '@/components/CampMatrix';
 import ShareImport from '@/components/ShareImport';
 import FinancialDashboard from '@/components/FinancialDashboard';
 import Link from 'next/link';
-import { RefreshCw, CalendarRange, ArrowLeft, Trash2 } from 'lucide-react';
+import { RefreshCw, CalendarRange, ArrowLeft, Trash2, ShieldCheck } from 'lucide-react';
 
 export default function Dashboard() {
   const [mounted, setMounted] = useState(false);
@@ -128,7 +128,7 @@ export default function Dashboard() {
   };
 
   const handleClearPlannerData = async () => {
-    if (confirm('Clean out the mock children, camps, and bookings so you can start fresh?')) {
+    if (confirm('Clear the mock children, camps, and bookings so you can start fresh?')) {
       const { clearPlannerData } = await import('@/lib/db');
       await clearPlannerData();
       await loadAllData();
@@ -211,6 +211,10 @@ export default function Dashboard() {
             <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
               Drag-and-drop or click-to-move summer activities.
             </p>
+            <p className="flex align-center gap-1" style={{ color: 'var(--text-muted)', fontSize: '0.78rem', marginTop: '0.25rem', fontWeight: 650 }}>
+              <ShieldCheck size={13} />
+              Private by default. Saved on this device unless you export a backup.
+            </p>
           </div>
         </div>
 
@@ -229,7 +233,7 @@ export default function Dashboard() {
             title="Remove mock children, camps, and bookings"
           >
             <Trash2 size={15} />
-            Clean Mock Data
+            Clear Mock Data
           </button>
           
           <ShareImport

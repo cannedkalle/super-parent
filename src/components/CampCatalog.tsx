@@ -2,7 +2,7 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import { Camp, CampDurationType } from '@/lib/db';
-import { Plus, Edit2, Trash2, Search, AlertTriangle, Clock, MapPin, DollarSign, CalendarRange, Link2, X } from 'lucide-react';
+import { Plus, Edit2, Trash2, Search, AlertTriangle, Clock, MapPin, DollarSign, CalendarRange, Link2, X, Copy } from 'lucide-react';
 import { getWeeks, needsExtendedCare } from '@/lib/timeUtils';
 
 interface CampCatalogProps {
@@ -21,6 +21,18 @@ interface ImportedCampPreview {
   provider?: string;
   price?: number | null;
   location?: string | null;
+  start_time?: string | null;
+  end_time?: string | null;
+  min_age?: number | null;
+  max_age?: number | null;
+  min_grade?: string | null;
+  max_grade?: string | null;
+  is_multiple_camps?: boolean;
+  ambiguity_reason?: string | null;
+  notes?: string;
+  registration_url?: string;
+  _parsedByAI?: boolean;
+  _parsedFromFetch?: boolean;
 }
 
 export default function CampCatalog({
@@ -42,7 +54,10 @@ export default function CampCatalog({
   const [searchTerm, setSearchTerm] = useState('');
   const [isAdding, setIsAdding] = useState(false);
   const [editingCampId, setEditingCampId] = useState<string | null>(null);
+  const [isDuplicating, setIsDuplicating] = useState(false);
+  const [isAddChoiceOpen, setIsAddChoiceOpen] = useState(false);
   const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
+  const addChoiceDialogRef = useRef<HTMLDialogElement>(null);
   const importDialogRef = useRef<HTMLDialogElement>(null);
   const campFormDialogRef = useRef<HTMLDialogElement>(null);
 
@@ -114,6 +129,17 @@ export default function CampCatalog({
   const [importPreview, setImportPreview] = useState<ImportedCampPreview | null>(null);
 
   useEffect(() => {
+    const dialog = addChoiceDialogRef.current;
+    if (!dialog) return;
+
+    if (isAddChoiceOpen && !dialog.open) {
+      dialog.showModal();
+    } else if (!isAddChoiceOpen && dialog.open) {
+      dialog.close();
+    }
+  }, [isAddChoiceOpen]);
+
+  useEffect(() => {
     const dialog = importDialogRef.current;
     if (!dialog) return;
 
@@ -155,11 +181,21 @@ export default function CampCatalog({
     setSelectedWeeks([]);
     setIsAdding(true);
     setEditingCampId(null);
+    setIsDuplicating(false);
+  };
+
+  const handleOpenAddChoice = () => {
+    setIsAddChoiceOpen(true);
+  };
+
+  const handleCloseAddChoice = () => {
+    setIsAddChoiceOpen(false);
   };
 
   const handleOpenImportDialog = () => {
     setImportUrl('');
     setImportPreview(null);
+    setIsAddChoiceOpen(false);
     setIsImportDialogOpen(true);
   };
 
@@ -191,6 +227,18 @@ export default function CampCatalog({
         provider: data.provider,
         price: data.price,
         location: data.location,
+        start_time: data.start_time,
+        end_time: data.end_time,
+        min_age: data.min_age,
+        max_age: data.max_age,
+        min_grade: data.min_grade,
+        max_grade: data.max_grade,
+        is_multiple_camps: data.is_multiple_camps,
+        ambiguity_reason: data.ambiguity_reason,
+        notes: data.notes,
+        registration_url: data.registration_url,
+        _parsedByAI: data._parsedByAI,
+        _parsedFromFetch: data._parsedFromFetch,
       });
     } catch (err: any) {
       console.error(err);
@@ -206,8 +254,8 @@ export default function CampCatalog({
     setIsAdding(true);
     setEditingCampId(null);
     setDurationType('full_day');
-    setStartTime('9:00 AM');
-    setEndTime('3:00 PM');
+    setStartTime(importPreview.start_time || '9:00 AM');
+    setEndTime(importPreview.end_time || '3:00 PM');
     setExtendedCareStartTime('');
     setExtendedCareEndTime('');
     setSelectedWeeks([]);
@@ -215,10 +263,10 @@ export default function CampCatalog({
     setProvider(importPreview.provider || '');
     setPrice(importPreview.price != null ? String(importPreview.price) : '');
     setAddress(importPreview.location || '');
-    setMinAge('');
-    setMaxAge('');
-    setMinGrade('');
-    setMaxGrade('');
+    setMinAge(importPreview.min_age != null ? String(importPreview.min_age) : '');
+    setMaxAge(importPreview.max_age != null ? String(importPreview.max_age) : '');
+    setMinGrade(importPreview.min_grade || '');
+    setMaxGrade(importPreview.max_grade || '');
     setImportPreview(null);
     setIsImportDialogOpen(false);
   };
@@ -244,11 +292,33 @@ export default function CampCatalog({
     }
     setEditingCampId(camp.id);
     setIsAdding(false);
+    setIsDuplicating(false);
+  };
+
+  const handleDuplicateCamp = (camp: Camp) => {
+    setName(`${camp.name} Copy`);
+    setProvider(camp.provider);
+    setPrice(String(camp.price));
+    setAddress(camp.address);
+    setMinAge(camp.min_age != null ? String(camp.min_age) : '');
+    setMaxAge(camp.max_age != null ? String(camp.max_age) : '');
+    setMinGrade(camp.min_grade || '');
+    setMaxGrade(camp.max_grade || '');
+    setDurationType(camp.duration_type || 'full_day');
+    setStartTime(camp.start_time);
+    setEndTime(camp.end_time);
+    setExtendedCareStartTime(camp.extended_care_start_time || '');
+    setExtendedCareEndTime(camp.extended_care_end_time || '');
+    setSelectedWeeks(!camp.available_weeks || camp.available_weeks.length === 0 ? allWeekNumbers : camp.available_weeks);
+    setIsAdding(true);
+    setEditingCampId(null);
+    setIsDuplicating(true);
   };
 
   const handleCancel = () => {
     setIsAdding(false);
     setEditingCampId(null);
+    setIsDuplicating(false);
     setSelectedWeeks([]);
   };
 
@@ -322,24 +392,16 @@ export default function CampCatalog({
     <div className="glass-card catalog-card" style={{ display: 'flex', flexDirection: 'column' }}>
       <div className="flex justify-between align-center mb-3">
         <h3 style={{ fontSize: '1.15rem' }}>Camp Catalog</h3>
-        <div className="flex align-center gap-1">
-          <button
-            className="btn btn-icon"
-            onClick={handleOpenImportDialog}
-            aria-label="Import camp from webpage"
-            title="Import camp from webpage"
-          >
-            <Link2 size={18} />
-          </button>
-          <button
-            className="btn btn-icon"
-            onClick={handleOpenAdd}
-            aria-label="Add camp to catalog"
-            title="Add camp"
-          >
-            <Plus size={18} />
-          </button>
-        </div>
+        <button
+          className="btn btn-primary"
+          onClick={handleOpenAddChoice}
+          aria-label="Add camp"
+          title="Add camp"
+          style={{ padding: '0.45rem 0.75rem', fontSize: '0.82rem' }}
+        >
+          <Plus size={16} />
+          Add Camp
+        </button>
       </div>
 
       {/* Search Input */}
@@ -401,8 +463,18 @@ export default function CampCatalog({
                     <div className="flex gap-1" onClick={(e) => e.stopPropagation()}>
                       <button
                         className="btn-icon"
+                        onClick={() => handleDuplicateCamp(camp)}
+                        aria-label={`Duplicate ${camp.name}`}
+                        title="Duplicate camp as a new editable copy"
+                        style={{ padding: '6px' }}
+                      >
+                        <Copy size={13} />
+                      </button>
+                      <button
+                        className="btn-icon"
                         onClick={() => handleOpenEdit(camp)}
                         aria-label={`Edit ${camp.name}`}
+                        title={`Edit ${camp.name}`}
                         style={{ padding: '6px' }}
                       >
                         <Edit2 size={13} />
@@ -411,6 +483,7 @@ export default function CampCatalog({
                         className="btn-icon"
                         onClick={() => handleDelete(camp.id, camp.name)}
                         aria-label={`Delete ${camp.name}`}
+                        title={`Delete ${camp.name}`}
                         style={{ padding: '6px', color: 'var(--accent-terracotta)' }}
                       >
                         <Trash2 size={13} />
@@ -488,6 +561,80 @@ export default function CampCatalog({
       </p>
 
       <dialog
+        ref={addChoiceDialogRef}
+        className="glass"
+        onClose={() => setIsAddChoiceOpen(false)}
+        onClick={(e) => {
+          if (e.target === addChoiceDialogRef.current) {
+            handleCloseAddChoice();
+          }
+        }}
+        style={{
+          margin: 'auto',
+          border: '1px solid var(--glass-border)',
+          borderRadius: 'var(--radius-lg)',
+          boxShadow: '0 20px 50px rgba(0,0,0,0.15)',
+          padding: '1.25rem',
+          maxWidth: '460px',
+          width: '90%',
+          outline: 'none',
+          backgroundColor: 'rgba(255, 255, 255, 0.96)'
+        }}
+        aria-labelledby="add-camp-choice-title"
+      >
+        <div className="flex justify-between align-center mb-4">
+          <div>
+            <h3 id="add-camp-choice-title" style={{ fontSize: '1.15rem', fontWeight: 800, margin: 0 }}>
+              Add Camp
+            </h3>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', marginTop: '0.25rem' }}>
+              Start from a camp webpage or enter the details yourself.
+            </p>
+          </div>
+          <button
+            type="button"
+            className="btn-icon"
+            onClick={handleCloseAddChoice}
+            aria-label="Close add camp choices"
+            title="Close"
+          >
+            <X size={18} />
+          </button>
+        </div>
+
+        <div className="flex flex-col gap-2">
+          <button
+            type="button"
+            className="btn btn-sage"
+            onClick={handleOpenImportDialog}
+            style={{ justifyContent: 'flex-start', padding: '0.8rem' }}
+          >
+            <Link2 size={17} />
+            Add from link
+          </button>
+          <p style={{ color: 'var(--text-muted)', fontSize: '0.76rem', margin: '-0.25rem 0 0.5rem 2.35rem' }}>
+            Paste a camp page and review imported details before saving.
+          </p>
+
+          <button
+            type="button"
+            className="btn btn-primary"
+            onClick={() => {
+              handleCloseAddChoice();
+              handleOpenAdd();
+            }}
+            style={{ justifyContent: 'flex-start', padding: '0.8rem' }}
+          >
+            <Plus size={17} />
+            Add manually
+          </button>
+          <p style={{ color: 'var(--text-muted)', fontSize: '0.76rem', margin: '-0.25rem 0 0 2.35rem' }}>
+            Enter name, provider, schedule, price, and available weeks yourself.
+          </p>
+        </div>
+      </dialog>
+
+      <dialog
         ref={campFormDialogRef}
         className="glass"
         onClose={handleCancel}
@@ -515,10 +662,12 @@ export default function CampCatalog({
           <div className="flex justify-between align-center mb-4">
             <div>
               <h3 id="camp-form-title" style={{ fontSize: '1.2rem', fontWeight: 800, margin: 0 }}>
-                {editingCampId ? 'Edit Camp' : 'Add Camp'}
+                {editingCampId ? 'Edit Camp' : isDuplicating ? 'Duplicate Camp' : 'Add Camp'}
               </h3>
               <p style={{ color: 'var(--text-secondary)', fontSize: '0.82rem', marginTop: '0.25rem' }}>
-                Fill in the schedule details and choose which camp weeks are available.
+                {isDuplicating
+                  ? 'Review the copied details, then adjust the name, schedule, or weeks before saving.'
+                  : 'Fill in the schedule details and choose which camp weeks are available.'}
               </p>
             </div>
             <button
@@ -526,6 +675,7 @@ export default function CampCatalog({
               className="btn-icon"
               onClick={handleCancel}
               aria-label="Close camp form"
+              title="Close"
             >
               <X size={18} />
             </button>
@@ -786,7 +936,7 @@ export default function CampCatalog({
               Cancel
             </button>
             <button type="submit" className="btn btn-primary">
-              Save Camp
+              {isDuplicating ? 'Save Copy' : 'Save Camp'}
             </button>
           </div>
         </form>
@@ -823,7 +973,7 @@ export default function CampCatalog({
               <p style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', marginTop: '0.25rem' }}>
                 {importPreview
                   ? 'Review the imported details, then confirm to edit and save.'
-                  : 'Paste a camp webpage and review the imported details before saving.'}
+                  : 'Paste a camp webpage. We will import what we can and leave the rest for review.'}
               </p>
             </div>
             <button
@@ -832,6 +982,7 @@ export default function CampCatalog({
               onClick={handleCloseImportDialog}
               disabled={isImporting}
               aria-label="Close import dialog"
+              title="Close"
             >
               <X size={18} />
             </button>
@@ -852,7 +1003,7 @@ export default function CampCatalog({
                   required
                 />
                 <p style={{ fontSize: '0.72rem', color: 'var(--text-muted)', margin: 0 }}>
-                  Imports title, provider, price, and address when available.
+                  Imports name, provider, price, address, hours, and ages when available.
                 </p>
               </div>
 
@@ -891,13 +1042,17 @@ export default function CampCatalog({
                   ['Provider', importPreview.provider || 'Not found'],
                   ['Price', importPreview.price != null ? `$${importPreview.price}` : 'Not found'],
                   ['Address', importPreview.location || 'Not found'],
+                  ['Hours', importPreview.start_time && importPreview.end_time ? `${importPreview.start_time} - ${importPreview.end_time}` : 'Not found'],
+                  ['Ages', importPreview.min_age != null || importPreview.max_age != null
+                    ? `${importPreview.min_age ?? '?'} - ${importPreview.max_age ?? '?'}`
+                    : 'Not found'],
                 ].map(([label, value]) => (
                   <div
                     key={label}
                     className="flex justify-between gap-3"
                     style={{
                       padding: '0.45rem 0',
-                      borderBottom: label === 'Address' ? 'none' : '1px solid rgba(45, 43, 42, 0.08)',
+                      borderBottom: label === 'Ages' ? 'none' : '1px solid rgba(45, 43, 42, 0.08)',
                       fontSize: '0.85rem'
                     }}
                   >
@@ -908,6 +1063,36 @@ export default function CampCatalog({
                   </div>
                 ))}
               </div>
+              {importPreview.is_multiple_camps && (
+                <div
+                  className="flex gap-2 align-start"
+                  style={{
+                    backgroundColor: 'rgba(255, 220, 46, 0.18)',
+                    border: '1px solid rgba(23, 19, 20, 0.22)',
+                    color: 'var(--text-primary)',
+                    fontSize: '0.78rem',
+                    fontWeight: 650,
+                    padding: '0.65rem',
+                    marginBottom: '1rem'
+                  }}
+                >
+                  <AlertTriangle size={16} style={{ flexShrink: 0, marginTop: '1px' }} />
+                  <span>
+                    This link may include multiple camps. Add more specific information as needed before saving.
+                    {importPreview.ambiguity_reason ? ` ${importPreview.ambiguity_reason}` : ''}
+                  </span>
+                </div>
+              )}
+              {importPreview._parsedByAI && (
+                <p style={{ color: 'var(--text-muted)', fontSize: '0.74rem', margin: '-0.4rem 0 1rem' }}>
+                  AI helped extract these fields. Please review before saving.
+                </p>
+              )}
+              {importPreview._parsedFromFetch === false && (
+                <p style={{ color: 'var(--accent-terracotta)', fontSize: '0.74rem', margin: '-0.4rem 0 1rem', fontWeight: 650 }}>
+                  This page could not be read automatically. The imported values are placeholders.
+                </p>
+              )}
 
               <div className="flex justify-between gap-2">
                 <button

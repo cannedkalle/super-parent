@@ -19,7 +19,7 @@ const apps = [
     status: 'Ready',
     accent: 'var(--accent-sage)',
     icon: CalendarRange,
-    details: ['Week matrix', 'Budget tracking', 'Age and grade warnings'],
+    details: ['Week matrix', 'Budget tracking', 'Private local data'],
   },
   {
     title: 'Pop Trend Cheatsheet',
@@ -98,7 +98,7 @@ export default function ToolkitHome() {
           <div className="flex flex-wrap gap-2" style={{ marginTop: '1.5rem' }}>
             <span className="badge badge-booked">Local-first</span>
             <span className="badge badge-idea">Planning tools</span>
-            <span className="badge badge-waitlisted">Vibe coded</span>
+            <span className="badge badge-waitlisted">Private by default</span>
           </div>
         </div>
 
