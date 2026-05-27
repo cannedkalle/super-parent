@@ -22,7 +22,7 @@ import {
   Upload,
 } from 'lucide-react';
 
-type TrendCategory = 'Memes & Slang' | 'Games' | 'Shows & Music' | 'Toys & Collectibles' | 'Style';
+type TrendCategory = 'Memes & Slang' | 'Games' | 'Shows & Music' | 'Toys & Collectibles' | 'Style' | 'Other Kid Culture';
 type Familiarity = 'New to me' | 'Heard it' | 'I get it';
 
 interface TrendCard {
@@ -42,16 +42,24 @@ interface TrendCard {
 
 interface DailyFeedEntry {
   id: string;
+  isoDate: string;
   date: string;
   displayDate: string;
   trends: TrendCard[];
 }
 
+type TrendDraft = Omit<TrendCard, 'id' | 'pinned' | 'updated'>;
+
 const FLASHCARD_STORAGE_KEY = 'super_parent_pop_trend_flashcards';
 const LEGACY_STORAGE_KEY = 'super_parent_pop_trend_cheatsheet';
 
-const categories: TrendCategory[] = ['Memes & Slang', 'Games', 'Shows & Music', 'Toys & Collectibles', 'Style'];
+const categories: TrendCategory[] = ['Memes & Slang', 'Games', 'Shows & Music', 'Toys & Collectibles', 'Style', 'Other Kid Culture'];
 const statuses: Familiarity[] = ['New to me', 'Heard it', 'I get it'];
+const statusRank: Record<Familiarity, number> = {
+  'New to me': 0,
+  'Heard it': 1,
+  'I get it': 2,
+};
 
 const starterTrends: TrendCard[] = [
   {
@@ -140,7 +148,7 @@ const starterTrends: TrendCard[] = [
   },
 ];
 
-const blankTrend: Omit<TrendCard, 'id' | 'pinned' | 'updated'> = {
+const blankTrend: TrendDraft = {
   title: '',
   category: 'Memes & Slang',
   signal: '',
@@ -154,7 +162,158 @@ const blankTrend: Omit<TrendCard, 'id' | 'pinned' | 'updated'> = {
 
 const publicDailyFeedHistory: DailyFeedEntry[] = [
   {
+    id: 'feed-2026-05-25',
+    isoDate: '2026-05-25',
+    date: 'May 25, 2026',
+    displayDate: '05/25 Monday',
+    trends: [
+      {
+        id: 'digest-toca-boca-music',
+        title: 'Toca Boca World music drops',
+        category: 'Games',
+        signal: 'Kids talking about Olivia Rodrigo in Toca Boca, decorating rooms to songs, roleplay scenes built around artist months',
+        meaning: 'Toca Boca is folding pop-music fandom into its sandbox app, so the draw is not only open-ended play but using familiar songs to set a vibe and show taste.',
+        parentTranslation: 'This is digital dollhouse play with a soundtrack. For some kids, the music matters less as “listening” and more as a badge that their pretend world feels current.',
+        askPrompt: 'What do kids actually do with the music player: make story scenes, decorate to match the songs, or mostly show friends which artist month they like?',
+        watchOut: 'Useful low-drama trend overall, but keep an eye on pack-purchase pressure, update churn, and whether music fandom is pulling kids from the app into more open social/video spaces.',
+        ageBand: 'Kids + tweens',
+        status: 'New to me',
+        pinned: false,
+        updated: 'Public feed',
+      },
+      {
+        id: 'digest-jellycat-collecting',
+        title: 'Jellycat collecting',
+        category: 'Toys & Collectibles',
+        signal: 'Wishlists, sellout alerts, store hunts, plush “drops,” and kids comparing favorites or harder-to-find characters',
+        meaning: 'Jellycat has shifted from simple comfort plush to a light collection culture, where softness still matters but scarcity and finding the “right” character matter too.',
+        parentTranslation: 'This is a gentler collectible trend than trading cards or blind boxes, but it still has status energy once kids start chasing specific animals, seasonal launches, or store exclusives.',
+        askPrompt: 'Is the appeal mostly cuddly comfort, room decor, or finding the one character that feels special enough to ask for?',
+        watchOut: 'Usually low risk, but resellers, price creep, and fast sellouts can turn a sweet plush into a scarcity-and-spending loop if expectations are not set early.',
+        ageBand: 'Kids + tweens',
+        status: 'New to me',
+        pinned: false,
+        updated: 'Public feed',
+      },
+      {
+        id: 'digest-toy-story-5',
+        title: 'Toy Story 5 countdown',
+        category: 'Shows & Music',
+        signal: 'Trailer talk, character rewatching, Lilypad tablet chatter, and families noticing the movie’s toys-versus-tech setup',
+        meaning: 'The next Toy Story is landing as both nostalgia bait for parents and fresh excitement for kids, with the new hook centered on play competing with screens.',
+        parentTranslation: 'This is less a deep-lore fandom moment than a shared family reference point. It gives parents an easy way into conversations about what still counts as fun, imaginative play.',
+        askPrompt: 'Which part is interesting to kids right now: seeing Woody and Buzz again, the new tablet villain, or just having a big summer movie everyone knows?',
+        watchOut: 'Probably one of the safer current hype cycles, but younger kids may mostly encounter trailers, shorts, and merch first, so check whether the excitement is about the story or just the marketing loop.',
+        ageBand: 'Kids + tweens',
+        status: 'New to me',
+        pinned: false,
+        updated: 'Public feed',
+      },
+    ],
+  },
+  {
+    id: 'feed-2026-05-24',
+    isoDate: '2026-05-24',
+    date: 'May 24, 2026',
+    displayDate: '05/24 Sunday',
+    trends: [
+      {
+        id: 'digest-brookhaven-rp',
+        title: 'Brookhaven roleplay',
+        category: 'Games',
+        signal: 'Roblox house claims, family roleplay, premium-house status talk, after-school meetups',
+        meaning: 'A free-form Roblox town where the point is social roleplay: kids claim houses, act out jobs or families, and mostly use the space to hang out.',
+        parentTranslation: 'Think digital dollhouse plus group chat. The draw is less the map itself and more the feeling of meeting friends in a shared pretend world.',
+        askPrompt: 'What do kids actually do in Brookhaven right now: decorate houses, roleplay families, or mostly just meet up and chat?',
+        watchOut: 'Because the play is so social, check chat settings, Robux pressure around Premium perks, and whether roleplay with strangers is getting weird or intense.',
+        ageBand: 'Kids + tweens',
+        status: 'New to me',
+        pinned: false,
+        updated: 'Public feed',
+      },
+      {
+        id: 'digest-beyblade-x',
+        title: 'Beyblade X',
+        category: 'Toys & Collectibles',
+        signal: 'Launcher talk, stadium battles, part-combo debates, school or sibling tournaments',
+        meaning: 'The current Beyblade generation is being treated less like a throwback toy and more like a fast, competitive hobby with parts, strategy, and event buzz.',
+        parentTranslation: 'Kids are not only collecting tops. They are comparing builds, practicing launches, and turning it into a mini-sport with status around skill and gear.',
+        askPrompt: 'What matters more right now: favorite characters, rare parts, or having the combo that actually wins?',
+        watchOut: 'Budget for the stadium-and-launcher ecosystem before extras pile up, and keep play to open spaces where fast parts are not hitting siblings, pets, or breakables.',
+        ageBand: 'Elementary + tweens',
+        status: 'New to me',
+        pinned: false,
+        updated: 'Public feed',
+      },
+      {
+        id: 'digest-bitzee-aquarium',
+        title: 'Bitzee Aquarium',
+        category: 'Toys & Collectibles',
+        signal: 'Touchable digital pets, fish-tank reveals, desk-toy talk, comparison to Tamagotchi-style pets',
+        meaning: 'A new Bitzee spin that turns the digital-pet loop into a tactile aquarium: kids feed, tap, and collect animated sea creatures without handing over a phone.',
+        parentTranslation: 'This hits the “screen-like but not a screen” sweet spot. It scratches the care-and-collect itch while still feeling like a contained toy.',
+        askPrompt: 'Is the fun mostly the petting/feeding part, or comparing which creatures and tank details friends have unlocked?',
+        watchOut: 'Probably gentler than app-based pets, but it can still become a collect-them-all purchase trail if kids start chasing every version or accessory.',
+        ageBand: 'Kids',
+        status: 'New to me',
+        pinned: false,
+        updated: 'Public feed',
+      },
+    ],
+  },
+  {
+    id: 'feed-2026-05-23',
+    isoDate: '2026-05-23',
+    date: 'May 23, 2026',
+    displayDate: '05/23 Saturday',
+    trends: [
+      {
+        id: 'digest-dress-to-impress',
+        title: 'Dress to Impress',
+        category: 'Games',
+        signal: 'Roblox fashion rounds, outfit themes, VIP/code talk, runway voting',
+        meaning: 'A fast, social Roblox dress-up game where kids build looks under time pressure and get rated by other players.',
+        parentTranslation: 'It is dress-up play mixed with public scoring. The draw is showing taste and knowing the references, not just winning.',
+        askPrompt: 'What themes are fun right now, and do kids care more about creativity or getting votes?',
+        watchOut: 'Check chat settings, spending on VIP/items, and whether public scoring is turning the game mean or stressful.',
+        ageBand: 'Kids + tweens',
+        status: 'New to me',
+        pinned: false,
+        updated: 'Public feed',
+      },
+      {
+        id: 'digest-needoh-hunting',
+        title: 'NeeDoh hunting',
+        category: 'Toys & Collectibles',
+        signal: 'Squishy fidgets, variant names, restock hunts, backpack/classroom swapping',
+        meaning: 'A fidget-toy craze driven by texture, collecting, and the social hunt for sold-out versions.',
+        parentTranslation: 'The squish itself matters, but the bigger social signal is finding the hard-to-get one before everyone else does.',
+        askPrompt: 'Which version feels different enough that kids keep looking for more?',
+        watchOut: 'Set spending expectations and school rules early; a harmless fidget can easily turn into a distraction-and-resale loop.',
+        ageBand: 'Kids + tweens',
+        status: 'New to me',
+        pinned: false,
+        updated: 'Public feed',
+      },
+      {
+        id: 'digest-lava-chicken',
+        title: 'Lava Chicken / “chicken jockey” quotes',
+        category: 'Shows & Music',
+        signal: 'Kids repeating the line, singing the song, Minecraft movie callbacks, inside-joke laughter',
+        meaning: 'A movie-to-game meme loop where one silly Minecraft scene and song became a shared quote across clips, gameplay, and kid conversations.',
+        parentTranslation: 'This is less about plot and more about having a loud, low-stakes phrase that everyone instantly recognizes.',
+        askPrompt: 'Is the joke still funny because of the movie, the song, or just because everyone can yell it?',
+        watchOut: 'A good moment for basic “fun without disruption” boundaries if the quote starts taking over class, cars, or movie nights.',
+        ageBand: 'Kids + tweens',
+        status: 'New to me',
+        pinned: false,
+        updated: 'Public feed',
+      },
+    ],
+  },
+  {
     id: 'feed-2026-05-22',
+    isoDate: '2026-05-22',
     date: 'May 22, 2026',
     displayDate: '05/22 Friday',
     trends: [
@@ -242,10 +401,16 @@ export default function PopTrendsPage() {
   const [trendTitleInput, setTrendTitleInput] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
   const [generationError, setGenerationError] = useState('');
+  const [generatedCandidates, setGeneratedCandidates] = useState<TrendDraft[]>([]);
+  const [candidateNotice, setCandidateNotice] = useState('');
   const [showFeedHistory, setShowFeedHistory] = useState(false);
+  const [selectedFeedId, setSelectedFeedId] = useState(publicDailyFeedHistory[0].id);
+  const [isReviewMode, setIsReviewMode] = useState(false);
+  const [reviewIndex, setReviewIndex] = useState(0);
+  const [showReviewAnswer, setShowReviewAnswer] = useState(false);
   const importFileRef = useRef<HTMLInputElement>(null);
-  const latestFeed = publicDailyFeedHistory[0];
-  const dailyDigestTrends = latestFeed.trends;
+  const selectedFeed = publicDailyFeedHistory.find((entry) => entry.id === selectedFeedId) || publicDailyFeedHistory[0];
+  const calendarDays = Array.from({ length: 31 }, (_, index) => index + 1);
 
   useEffect(() => {
     setMounted(true);
@@ -285,12 +450,21 @@ export default function PopTrendsPage() {
       .filter((entry) => entry.trends.length > 0);
   }, [category, query]);
 
-  const visibleDigestTrends = filteredDailyFeedHistory[0]?.trends || [];
+  const visibleDigestTrends =
+    filteredDailyFeedHistory.find((entry) => entry.id === selectedFeed.id)?.trends ||
+    filteredDailyFeedHistory[0]?.trends ||
+    [];
 
   const pinnedCount = trends.filter((trend) => trend.pinned).length;
   const knownCount = trends.filter((trend) => trend.status === 'I get it').length;
+  const reviewQueue = useMemo(
+    () => [...trends].sort((a, b) => statusRank[a.status] - statusRank[b.status] || Number(b.pinned) - Number(a.pinned)),
+    [trends]
+  );
+  const reviewCard = reviewQueue.length > 0 ? reviewQueue[reviewIndex % reviewQueue.length] : null;
 
   const isReviewingDraft = Boolean(editingId || draft.title.trim());
+  const hasGeneratedChoices = generatedCandidates.length > 0 && !isReviewingDraft;
 
   const addDigestTrend = (trend: TrendCard) => {
     setTrends((current) => {
@@ -310,6 +484,33 @@ export default function PopTrendsPage() {
     });
   };
 
+  const selectFeedEntry = (entryId: string) => {
+    setSelectedFeedId(entryId);
+    setShowFeedHistory(false);
+  };
+
+  const handleReviewAnswer = (status: Familiarity) => {
+    if (!reviewCard) return;
+    setTrends((current) =>
+      current.map((trend) =>
+        trend.id === reviewCard.id
+          ? {
+              ...trend,
+              status,
+              updated: 'Reviewed locally',
+            }
+          : trend
+      )
+    );
+    setShowReviewAnswer(false);
+    setReviewIndex((current) => current + 1);
+  };
+
+  const handleNextReviewCard = () => {
+    setShowReviewAnswer(false);
+    setReviewIndex((current) => current + 1);
+  };
+
   const handleGenerateDraft = async (event: React.FormEvent) => {
     event.preventDefault();
     const title = trendTitleInput.trim();
@@ -317,6 +518,8 @@ export default function PopTrendsPage() {
 
     setIsGenerating(true);
     setGenerationError('');
+    setGeneratedCandidates([]);
+    setCandidateNotice('');
 
     try {
       const response = await fetch('/api/generate-trend', {
@@ -332,17 +535,40 @@ export default function PopTrendsPage() {
       }
 
       const generated = await response.json();
-      setDraft({
-        title: generated.title || title,
-        category: generated.category || 'Memes & Slang',
-        signal: generated.signal || '',
-        meaning: generated.meaning || '',
-        parentTranslation: generated.parentTranslation || '',
-        askPrompt: generated.askPrompt || '',
-        watchOut: generated.watchOut || '',
-        ageBand: generated.ageBand || '',
-        status: generated.status || 'New to me',
-      });
+      const candidates = Array.isArray(generated.candidates) ? generated.candidates : generated.title ? [generated] : [];
+      const normalizedCandidates = candidates
+        .filter((candidate: Partial<TrendDraft>) => candidate && typeof candidate.title === 'string' && candidate.title.trim())
+        .map(
+          (candidate: Partial<TrendDraft>): TrendDraft => ({
+            title: candidate.title?.trim() || title,
+            category: categories.includes(candidate.category as TrendCategory)
+              ? (candidate.category as TrendCategory)
+              : 'Other Kid Culture',
+            signal: candidate.signal || '',
+            meaning: candidate.meaning || '',
+            parentTranslation: candidate.parentTranslation || '',
+            askPrompt: candidate.askPrompt || '',
+            watchOut: candidate.watchOut || '',
+            ageBand: candidate.ageBand || '',
+            status: statuses.includes(candidate.status as Familiarity) ? (candidate.status as Familiarity) : 'New to me',
+          })
+        );
+
+      if (normalizedCandidates.length === 0) {
+        setGenerationError(
+          generated.rejectedReason ||
+            `I could not find a kid-safe match for "${title}" yet.`
+        );
+        return;
+      }
+
+      if (normalizedCandidates.length === 1) {
+        setDraft(normalizedCandidates[0]);
+      } else {
+        setGeneratedCandidates(normalizedCandidates);
+      }
+
+      setCandidateNotice(generated.ambiguityNote || '');
       setEditingId(null);
     } catch (error: any) {
       console.error(error);
@@ -381,6 +607,8 @@ export default function PopTrendsPage() {
     setDraft(blankTrend);
     setTrendTitleInput('');
     setGenerationError('');
+    setGeneratedCandidates([]);
+    setCandidateNotice('');
   };
 
   const handleEdit = (trend: TrendCard) => {
@@ -398,6 +626,8 @@ export default function PopTrendsPage() {
     });
     setTrendTitleInput('');
     setGenerationError('');
+    setGeneratedCandidates([]);
+    setCandidateNotice('');
   };
 
   const handleDelete = (id: string) => {
@@ -413,6 +643,8 @@ export default function PopTrendsPage() {
       setDraft(blankTrend);
       setQuery('');
       setCategory('All');
+      setGeneratedCandidates([]);
+      setCandidateNotice('');
     }
   };
 
@@ -423,6 +655,8 @@ export default function PopTrendsPage() {
       setDraft(blankTrend);
       setTrendTitleInput('');
       setGenerationError('');
+      setGeneratedCandidates([]);
+      setCandidateNotice('');
       setQuery('');
       setCategory('All');
     }
@@ -476,6 +710,8 @@ export default function PopTrendsPage() {
       setDraft(blankTrend);
       setTrendTitleInput('');
       setGenerationError('');
+      setGeneratedCandidates([]);
+      setCandidateNotice('');
       setQuery('');
       setCategory('All');
     } catch (error: any) {
@@ -770,6 +1006,47 @@ export default function PopTrendsPage() {
           gap: 0.55rem;
         }
 
+        .candidateList {
+          display: grid;
+          gap: 0.65rem;
+        }
+
+        .candidateCard {
+          width: 100%;
+          display: grid;
+          gap: 0.35rem;
+          text-align: left;
+          border: 2px solid #171314;
+          background: #fffdf4;
+          color: #171314;
+          padding: 0.75rem;
+          cursor: pointer;
+        }
+
+        .candidateCard:hover {
+          background: #e7fbff;
+        }
+
+        .candidateCard strong {
+          font-size: 0.98rem;
+          text-transform: uppercase;
+        }
+
+        .candidateCard span:not(.categoryPill) {
+          color: #443a3d;
+          font-size: 0.82rem;
+          font-weight: 750;
+          line-height: 1.35;
+        }
+
+        .candidateCard em {
+          color: #171314;
+          font-size: 0.74rem;
+          font-style: normal;
+          font-weight: 950;
+          text-transform: uppercase;
+        }
+
         .digestList {
           display: grid;
           gap: 0.75rem;
@@ -812,18 +1089,42 @@ export default function PopTrendsPage() {
 
         .feedHistory {
           display: grid;
-          gap: 0.45rem;
+          grid-template-columns: repeat(7, minmax(0, 1fr));
+          gap: 0.35rem;
+          border: 2px solid #171314;
+          background: #ffffff;
+          padding: 0.55rem;
           margin-bottom: 0.75rem;
         }
 
-        .feedHistory button {
-          border: 2px solid rgba(23, 19, 20, 0.32);
+        .calendarLabel {
+          grid-column: 1 / -1;
+          font-size: 0.78rem;
+          font-weight: 950;
+          text-transform: uppercase;
+        }
+
+        .calendarDay {
+          aspect-ratio: 1;
+          border: 2px solid rgba(23, 19, 20, 0.2);
           background: #fffdf4;
           color: #171314;
-          padding: 0.45rem;
-          text-align: left;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 0.78rem;
           font-weight: 900;
+        }
+
+        .calendarDay.hasFeed {
+          border-color: #171314;
+          background: var(--app-accent-2);
           cursor: pointer;
+        }
+
+        .calendarDay.selected {
+          background: #171314;
+          color: #ffffff;
         }
 
         .digestCard {
@@ -893,6 +1194,39 @@ export default function PopTrendsPage() {
           color: #5a4d50;
           font-size: 0.78rem;
           font-weight: 800;
+        }
+
+        .reviewPanel {
+          background: #ffffff;
+          border: 3px solid #171314;
+          box-shadow: 5px 5px 0 var(--app-accent-2);
+          padding: 1rem;
+        }
+
+        .reviewPrompt {
+          display: grid;
+          gap: 0.45rem;
+        }
+
+        .reviewPrompt h3 {
+          font-size: clamp(1.8rem, 4vw, 3rem);
+          text-transform: uppercase;
+        }
+
+        .reviewActions {
+          display: grid;
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+          gap: 0.55rem;
+          margin-top: 0.8rem;
+        }
+
+        .reviewAnswer {
+          margin-top: 0.8rem;
+          background: #fffdf4;
+          border: 2px solid rgba(23, 19, 20, 0.25);
+          padding: 0.75rem;
+          color: #2c2527;
+          font-weight: 700;
         }
 
         .trendCard {
@@ -1065,6 +1399,10 @@ export default function PopTrendsPage() {
             grid-template-columns: 1fr;
           }
 
+          .reviewActions {
+            grid-template-columns: 1fr;
+          }
+
           .controlBand {
             box-shadow: 5px 5px 0 var(--app-accent);
           }
@@ -1142,7 +1480,7 @@ export default function PopTrendsPage() {
                 <Flame size={20} />
               </div>
               <div className="digestMeta">
-                <span className="dateStamp">{latestFeed.displayDate}</span>
+                <span className="dateStamp">{selectedFeed.displayDate}</span>
                 <button
                   type="button"
                   className="historyButton"
@@ -1155,12 +1493,29 @@ export default function PopTrendsPage() {
                 </button>
               </div>
               {showFeedHistory && (
-                <div className="feedHistory">
-                  {publicDailyFeedHistory.map((entry) => (
-                    <button key={entry.id} type="button" disabled={entry.id === latestFeed.id}>
-                      {entry.displayDate} · {entry.trends.length} cards
-                    </button>
-                  ))}
+                <div className="feedHistory" aria-label="Digest calendar">
+                  <div className="calendarLabel">May 2026</div>
+                  {calendarDays.map((day) => {
+                    const isoDay = `2026-05-${String(day).padStart(2, '0')}`;
+                    const feedEntry = publicDailyFeedHistory.find((entry) => entry.isoDate === isoDay);
+                    const isSelected = feedEntry?.id === selectedFeed.id;
+
+                    return feedEntry ? (
+                      <button
+                        key={isoDay}
+                        type="button"
+                        className={`calendarDay hasFeed${isSelected ? ' selected' : ''}`}
+                        onClick={() => selectFeedEntry(feedEntry.id)}
+                        title={`${feedEntry.displayDate}: ${feedEntry.trends.length} cards`}
+                      >
+                        {day}
+                      </button>
+                    ) : (
+                      <span key={isoDay} className="calendarDay">
+                        {day}
+                      </span>
+                    );
+                  })}
                 </div>
               )}
               <p className="hintText" style={{ margin: '0 0 0.75rem' }}>
@@ -1197,7 +1552,7 @@ export default function PopTrendsPage() {
 
             <section className="editorPanel">
               <div className="panelHead">
-                <h2>{editingId ? 'Edit flashcard' : isReviewingDraft ? 'Review AI card' : 'Make a flashcard'}</h2>
+                <h2>{editingId ? 'Edit flashcard' : isReviewingDraft ? 'Review AI card' : hasGeneratedChoices ? 'Choose a match' : 'Make a flashcard'}</h2>
                 <Sparkles size={20} />
               </div>
 
@@ -1219,6 +1574,27 @@ export default function PopTrendsPage() {
                   </button>
                   <p className="hintText">Enter only the title. AI fills the review card, then you can make small edits before adding it.</p>
                   {generationError && <p className="errorText">{generationError}</p>}
+                  {candidateNotice && <p className="hintText">{candidateNotice}</p>}
+                  {hasGeneratedChoices && (
+                    <div className="candidateList">
+                      {generatedCandidates.map((candidate, index) => (
+                        <button
+                          type="button"
+                          className="candidateCard"
+                          key={`${candidate.title}-${index}`}
+                          onClick={() => {
+                            setDraft(candidate);
+                            setGeneratedCandidates([]);
+                          }}
+                        >
+                          <span className="categoryPill">{candidate.category}</span>
+                          <strong>{candidate.title}</strong>
+                          <span>{candidate.parentTranslation || candidate.meaning}</span>
+                          <em>Review this card</em>
+                        </button>
+                      ))}
+                    </div>
+                  )}
                 </form>
               ) : (
                 <form className="formGrid" onSubmit={handleSubmit}>
@@ -1335,6 +1711,8 @@ export default function PopTrendsPage() {
                         setEditingId(null);
                         setDraft(blankTrend);
                         setGenerationError('');
+                        setGeneratedCandidates([]);
+                        setCandidateNotice('');
                       }}
                     >
                       Clear
@@ -1352,6 +1730,18 @@ export default function PopTrendsPage() {
                 <p>Browser-saved cards for review.</p>
               </div>
               <div className="collectionActions">
+                <button
+                  type="button"
+                  className="popButton smallAction"
+                  onClick={() => {
+                    setIsReviewMode((current) => !current);
+                    setShowReviewAnswer(false);
+                  }}
+                  disabled={trends.length === 0}
+                >
+                  <CheckCircle2 size={14} />
+                  {isReviewMode ? 'Close review' : 'Review mode'}
+                </button>
                 <button type="button" className="popButton secondary smallAction" onClick={handleRemoveMockData}>
                   <Trash2 size={14} />
                   Remove mock data
@@ -1377,6 +1767,55 @@ export default function PopTrendsPage() {
                 />
               </div>
             </div>
+
+            {isReviewMode && (
+              <div className="reviewPanel">
+                {reviewCard ? (
+                  <>
+                    <div className="reviewPrompt">
+                      <span className="categoryPill">{reviewCard.category}</span>
+                      <h3>{reviewCard.title}</h3>
+                      <p className="hintText" style={{ margin: 0 }}>
+                        Do you know what this means well enough to explain it?
+                      </p>
+                    </div>
+
+                    <div className="reviewActions">
+                      <button type="button" className="popButton secondary" onClick={() => handleReviewAnswer('New to me')}>
+                        New to me
+                      </button>
+                      <button type="button" className="popButton secondary" onClick={() => handleReviewAnswer('Heard it')}>
+                        Heard it
+                      </button>
+                      <button type="button" className="popButton" onClick={() => handleReviewAnswer('I get it')}>
+                        I get it
+                      </button>
+                    </div>
+
+                    <div className="flex gap-2 flex-wrap" style={{ marginTop: '0.8rem' }}>
+                      <button type="button" className="popButton secondary smallAction" onClick={() => setShowReviewAnswer((current) => !current)}>
+                        {showReviewAnswer ? 'Hide answer' : 'Show answer'}
+                      </button>
+                      <button type="button" className="popButton secondary smallAction" onClick={handleNextReviewCard}>
+                        Next card
+                      </button>
+                    </div>
+
+                    {showReviewAnswer && (
+                      <div className="reviewAnswer">
+                        <strong>Meaning:</strong> {reviewCard.meaning}
+                        <br />
+                        <strong>Parent translation:</strong> {reviewCard.parentTranslation}
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <div className="emptyState" style={{ boxShadow: 'none' }}>
+                    Add flashcards before starting review mode.
+                  </div>
+                )}
+              </div>
+            )}
 
             <div className="trendGrid">
               {filteredTrends.length === 0 ? (
