@@ -1,28 +1,17 @@
 import { GoogleGenAI, Type, type GenerateContentConfig } from '@google/genai';
 import { NextResponse } from 'next/server';
 
-type TrendCategory = 'Memes & Slang' | 'Games' | 'Shows & Music' | 'Toys & Collectibles' | 'Style' | 'Other Kid Culture';
-type Familiarity = 'New to me' | 'Heard it' | 'I get it';
+import { buildTrendCardPrompt } from '@/app/pop-trends/trendPrompts';
+import { POP_TREND_CATEGORIES } from '@/app/pop-trends/trendTypes';
+import type { TrendCategory, TrendDraft } from '@/app/pop-trends/trendTypes';
 
-interface GeneratedTrend {
-  title: string;
-  category: TrendCategory;
-  signal: string;
-  meaning: string;
-  parentTranslation: string;
-  askPrompt: string;
-  watchOut: string;
-  ageBand: string;
-  status: Familiarity;
-}
+type GeneratedTrend = TrendDraft;
 
 interface TrendCandidateResponse {
   candidates?: GeneratedTrend[];
   ambiguityNote?: string;
   rejectedReason?: string;
 }
-
-const categories: TrendCategory[] = ['Memes & Slang', 'Games', 'Shows & Music', 'Toys & Collectibles', 'Style', 'Other Kid Culture'];
 
 function fallbackTrend(title: string): GeneratedTrend {
   return {
@@ -68,7 +57,7 @@ const responseSchema = {
 };
 
 function normalizeCategory(value: string): TrendCategory {
-  return categories.includes(value as TrendCategory) ? (value as TrendCategory) : 'Other Kid Culture';
+  return POP_TREND_CATEGORIES.includes(value as TrendCategory) ? (value as TrendCategory) : 'Other Kid Culture';
 }
 
 function normalizeTrend(candidate: GeneratedTrend, fallbackTitle: string): GeneratedTrend {
@@ -147,32 +136,7 @@ async function generateCandidates(ai: GoogleGenAI, title: string, useSearch: boo
 
   return ai.models.generateContent({
     model: 'gemini-3.1-flash-lite',
-    contents: [
-      'You create parent-facing flashcards about kid and teen pop-culture trends.',
-      'Hard constraints:',
-      '- Include any plausible kid, tween, or teen pop-culture signal, broadly defined. This includes but is not limited to school chatter, memes, games, shows, music, toys, collectibles, snack/food brand collectibles, retail giveaways, sports/playground rituals, books, crafts, apps, creator/video culture, style, shopping requests, local school fads, and phrases kids repeat.',
-      '- Prefer recent and visible signals. Use whatever search/trend context is available to you, including Google Search results, Google Trends-style popularity signals, Reddit/community discussion, parent forums, game/platform pages, brand/product pages, news, or social trend coverage when applicable.',
-      '- Do not claim that Google, Reddit, or trend data confirms something unless that evidence is actually available in the current generation context.',
-      '- Treat the parent-entered title as a rough search query, not a precise canonical name. Check obvious singular/plural, spacing, brand, and adjacent-keyword variants before guessing. Example: "bear card" may need "bear cards", "BEAR cards", "Bear Snacks cards", "fruit roll cards", or "collectible cards".',
-      '- If a Google-like result points to a brand/product collectible campaign or school trading fad, prioritize that over generic game/card guesses.',
-      '- Do not include generic dictionary meanings, adult-only slang, investing/finance terms, medical meanings, animal facts, or unrelated web results unless they are clearly tied to kid pop culture.',
-      '- Each candidate must name a concrete trend context rather than a broad category. If exact confirmation is weak, frame the candidate as a plausible match and avoid claiming it is confirmed.',
-      '- Do not use generic candidate titles such as "Bear Card (Trading Card Games)" or "Bear Card (Online Games)". Use a specific context like "Bear Card (Pokemon TCG)" or omit that candidate.',
-      '- Avoid asking the parent to clarify ambiguous terms. Do the interpretation work: create plausible, kid-relevant candidate cards and let the parent choose.',
-      '- Return an empty candidates array only when there are no plausible kid-pop-culture interpretations, or the plausible interpretations are unsafe/adult/fringe enough that parents should not be offered a casual flashcard.',
-      '- Be conservative about controversy, mature content, risky challenges, hate, self-harm, sexual content, drugs, or fringe internet drama. Reject or keep the watch-out sober and parent-safe.',
-      '- Keep each field concise, practical, and non-alarmist.',
-      'Output contract:',
-      '- Return one JSON object with candidates, ambiguityNote, and rejectedReason.',
-      '- candidates must be an array of separate JSON objects. Each object represents exactly one kid-pop-trend interpretation.',
-      '- If the parent-entered term is ambiguous, split it into separate candidate objects. Do not combine meanings with "or", "/", "various games", "different contexts", or similar blended wording inside one card.',
-      '- For ambiguous terms, make each candidate title self-disambiguating with a short context in parentheses, such as "Bear Card (Adopt Me!)" or "Bear Card (Specific Show Name)".',
-      '- If exact meanings are uncertain, still return separate plausible candidate objects when they are kid-relevant and safe. Use ambiguityNote to say that the parent should pick the match they recognize.',
-      '- If you cannot separate the meanings into specific, kid-relevant contexts, return candidates: [] instead of a mixed or generic card.',
-      `Use the closest category for filtering: ${categories.join(', ')}. Choose "Other Kid Culture" when none of the narrower categories fit.`,
-      'Return JSON only.',
-      `Trend title entered by parent: ${title}`,
-    ].join('\n'),
+    contents: buildTrendCardPrompt(title),
     config,
   });
 }
